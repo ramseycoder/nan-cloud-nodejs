@@ -1,0 +1,238 @@
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    margin-top: 120px;
+}
+
+
+.navbar {
+    background: navy;
+    width: 100%;
+    padding: 15px;
+    height: 30px;
+    position: fixed;
+    top: 0;
+    z-index: 1;
+}
+
+.breadcrumb ul {
+    width: 100%;
+    color: white;
+    position: fixed;
+    background: white;
+    padding: 0;
+    margin: 0;
+    top: 5%;
+    z-index: 1;
+    border: 1px solid darkgrey;
+}
+
+.breadcrumb ul li {
+    display: inline-block;
+    margin: 1px;
+    font-size: 20px;
+    color: grey;
+    font-size: 15px;
+    border: 1px solid darkgrey;
+    border-left: none;
+    width: 150px;
+    padding: 8px;
+    margin: 0;
+    text-align: center;
+    font-weight: bolder;
+
+}
+
+.breadcrumb ul li i {
+    margin: 2px;
+    font-size: 30px;
+}
+
+.breadcrumb ul li>span {
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    display: block;
+}
+
+.breadcrumb ul li>span .fdn {
+    position: relative;
+    top: -5px;
+}
+
+.breadcrumb ul li span:hover,
+.breadcrumb ul li.active span {
+    color: black;
+}
+
+.navbar button.create_folder {
+    float: left;
+    padding: 8px;
+    background: gray;
+    color: white;
+    border: none;
+    cursor: pointer;
+
+}
+
+.navbar .options {
+    float: right;
+    margin-right: 30px;
+}
+
+.navbar .options button {
+    padding: 8px;
+    background: gray;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#myDropZone {
+    width: 300px;
+    height: 300px;
+}
+
+.modal {
+    position: fixed !important;
+    top: 30% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    border: 2px solid skyblue !important;
+    border-radius: 25px;
+    z-index: 1;
+    background: rgb(169, 169, 169);
+}
+
+.modal2 {
+    width: 250px;
+    padding: 15px;
+    border: 2px solid skyblue;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: rgb(169, 169, 169);
+    border-radius: 25px;
+    padding-bottom: 30px;
+    z-index: 1;
+
+}
+
+.modal2 h3 {
+    font-weight: bolder;
+    font-size: 25px;
+}
+
+.modal2 input {
+    padding: 7px;
+    border: 1px solid darkgrey;
+    font-size: 15px;
+    border-radius: 5px;
+}
+
+.modal2 button {
+    padding: 7px;
+    border: 1px solid navy;
+    color: white;
+    background: navy;
+    font-size: 15px;
+    font-weight: bolder;
+    border-radius: 5px;
+}
+
+
+
+.liste_dossiers {
+    width: 100%;
+    height: 100%;
+}
+
+.liste_dossiers ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 0;
+}
+
+.liste_dossiers ul li {
+    border-bottom: 1px solid darkgrey;
+    padding: 20px;
+    cursor: pointer;
+    color: grey;
+}
+
+.liste_dossiers ul li:hover {
+    background: ghostwhite;
+    color: black;
+}
+
+.liste_dossiers ul li span.name {
+    font-size: 18px;
+    font-weight: bolder;
+    top: -20px;
+    position: relative;
+}
+
+.liste_dossiers ul li span.namev {
+    font-size: 18px;
+    font-weight: bolder;
+    top: -40px;
+    position: relative;
+}
+
+.liste_dossiers ul li span>i {
+    color: grey;
+    margin-right: 15px;
+    font-size: 18px;
+    font-weight: bolder;
+    top: -20px;
+    position: relative;
+}
+
+.liste_dossiers ul li i {
+    font-size: 70px;
+}
+
+.liste_dossiers ul li i.fa-trash {
+    display: block;
+    float: right;
+    color: grey;
+    opacity: 0.4;
+    font-size: 30px;
+    position: relative;
+    display: none;
+    right: 5%;
+    top: 15%;
+    margin-top: 20px;
+    transition: all 0.25s ease-in;
+}
+
+.liste_dossiers ul li i.fa-trash:hover {
+    color: red;
+    opacity: 1;
+}
+
+.liste_dossiers ul li:hover i.fa-trash {
+    display: block;
+}
+
+video::-webkit-media-controls {
+    display: none;
+}
+
+
+#Video::-webkit-media-controls {
+    display: block;
+}
+
+/* #Video {
+    border: 2px solid black;
+    border-radius: 5px;
+    margin: 0 auto;
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+} */

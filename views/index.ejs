@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="/public/stylesheets/all.min.css">
+  <link rel="stylesheet" href="/public/stylesheets/style.css">
+  <link rel="stylesheet" href="/public/stylesheets/basic.css">
+  <title>Document</title>
+</head>
+
+<body>
+  <%
+      function verifImage(str){
+        return ['jpg','png','gif','jpeg'].includes(getType(str));
+      }
+
+      function getType(str){
+        return str.slice(verifPoint(str)+1,str.length);
+      }
+
+      function verifPoint(str) {
+        const tab = [];
+        for (let i = 0; i < str.length; i++) {
+          if (str[i] === ".") {
+            tab.push(i);
+          }
+        }
+        return tab[tab.length - 1];
+      }
+    
+  %>
+  <nav class="navbar">
+    <button class="create_folder">create folder</button>
+    <div class="options">
+      <button class="folder">folder</button>
+      <button class="upload_folder">upload folder</button>
+    </div>
+  </nav>
+  <div class="breadcrumb">
+    <ul>
+      <li class="active">
+        <span>
+          <i class="fas fa-folder"></i>
+          <span class="fdn">root</span>
+        </span>
+      </li>
+    </ul>
+  </div>
+  <div class="liste_dossiers">
+    <% if(root === 0){%>
+    <p>le dossier est vide</p>
+    <%}else{%>
+    <ul>
+      <% root.forEach(file => {%>
+      <% if(getType(file) === file){%>
+      <li onclick="openfolder(this)"><span class=" arrow">
+          <%}else if(getType(file) === "mp4"){%>
+      <li onmouseover="play(this)" onmouseout="stop(this)" onclick="fullscreen(this)"><span class="arrow">
+          <%}else{%>
+      <li><span class="arrow">
+          <%}%>
+                <i class="fas fa-arrow-alt-circle-right"></i></span>
+              <%if(getType(file) === "mp4"){ %>
+          <video width="200" height="100" muted loop="loop" controls="controls">
+            <source src="/STORAGE/<%= file %>#t=4,7" type="video/mp4" />
+          </video> <span class="namev"><%= file %></span>
+          <%}else if(verifImage(file)){%><img src="/STORAGE/<%= file %>" height="80">&nbsp;&nbsp;&nbsp;<span
+            class="name"><%= file %></span>
+          <%}else if(getType(file) === "mp3"){%>
+          <i class="fas fa-file-audio"></i>&nbsp;&nbsp;&nbsp;<span class="name"><%= file %></span>
+          <%}else if(getType(file) === file){%>
+          <i class="fas fa-folder"></i>&nbsp;&nbsp;&nbsp;<span class="name"><%= file %></span>
+          <%}else{%>
+          <i class="fas fa-file"></i>&nbsp;&nbsp;&nbsp;<span class="name"><%= file %></span>
+          <%}%>
+            <%if(getType(file) === file || getType(file) === "mp4"){%>
+          <i class="fas fa-trash" onmouseenter="block()" onmouseleave="unblock()" onclick="supp(this)"></i>
+          <%}else{%>
+          <i class="fas fa-trash" onclick="supp(this)"></i>
+          <%}%>
+                
+              </li>
+          <%})%>
+    </ul>
+    <%}%>
+  </div>
+ 
+    <div class="modal" style="display:none">
+      <div id="my-dropzone" class="dropzone">
+        <div class="dz-message">
+          <div class="col-xs-8">
+            <div class="message">
+              <p>déplacez les éléments ici où cliquer pour uploader<p>
+            </div>
+          </div>
+          <div class="fallback">
+            <input type="file" name="file" multiple />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal2" style="display:none">
+      <h4>créer un nouveau dossier</h4>
+      <form>
+        <input type="text" id="dossier_name" required placeholder="entrez le nom du dossier">
+        <button>ok</button>
+      </form>
+    </div>
+    <script src="/public/javascripts/jquery.min.js"></script>
+    <script src="/public/javascripts/dropzone.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      Dropzone.autoDiscover = false;
+      const myDropzone = new Dropzone("#my-dropzone", {
+        url: "/upload-file"
+      });
+      Dropzone.options.myDropzone = {
+        paramName: 'file',
+      }
+
+      /* $('.modal button').on('click',function(){
+        myDropzone.options.autoProcessQueue = true;
+        myDropzone.processQueue();
+      }) */
+
+      myDropzone.on('queuecomplete', function () {
+        console.log('yeyeyeyeyeyeye');
+        $('.dz-message').show();
+        $('.dz-preview').hide();
+        $('.modal').fadeOut(300);
+        socket.emit('reload');
+      })
+
+      let canSupp = true;
+      $(function () {
+        $('.modal').on('click', function () {
+          console.log($('.modal:hover').length > 0);
+        })
+        $('.upload_folder').on('click', function () {
+          $('.modal').css('display', 'block');
+        });
+
+        //play and reset video on hover
+        $('video').on('mouseover', function () {
+          console.log('okok ok', this);
+          this.play();
+        }).on('mouseout', function () {
+          console.log('okokok', this);
+          this.reset();
+        })
+
+        //open the new folder modal
+        $('.create_folder').on('click', function () {
+          $('.modal2').css('display', 'block');
+        });
+
+        // going to create a new folder on form submit using socket.io
+        $('.modal2 form').on('submit', function (e) {
+          e.preventDefault();
+          $('.modal2').fadeOut(300);
+          socket.emit('create_folder', $('.modal2 form input').val());
+        });
+
+        /// action to pause, when the create or read folder is set
+        socket.on('success', (data, link, bool) => {
+          $('.modal2 input').val('');
+          if (bool) {
+            $('.breadcrumb ul').html(link);
+          }
+          $('.liste_dossiers').html(data);
+        })
+
+      })
+
+      // functions part
+      function openfolder(el) {
+        if (canSupp) {
+          socket.emit('openFolder', el.children[2].textContent)
+        }
+      }
+
+      function openfolderb(el) {
+        socket.emit('openFolder', el.children[0].children[1].textContent)
+      }
+
+      function supp(el) {
+        socket.emit('delete', el.parentElement.children[2].textContent);
+      }
+
+      function block() {
+        canSupp = false;
+      }
+
+      function unblock() {
+        canSupp = true;
+      }
+
+      function play(el) {
+        el.children[1].play();
+      }
+
+      function stop(el) {
+        el.children[1].pause();
+        el.children[1].currentTime = 4;
+      }
+
+      function fullscreen(el) {
+        let Src = el.children[1].children[0].src;
+        console.log(Src);
+        const video = document.querySelector('#Video');
+        video.children[0].setAttribute('src', Src.slice(0, Src.indexOf('#')));
+        console.log(video);
+        video.play();
+        $('#Video').fadeIn(500);
+      }
+
+      $('video').each(function () {
+        this.controls = false;
+        this.currentTime = 4;
+      })
+    </script>
+
+</html>
