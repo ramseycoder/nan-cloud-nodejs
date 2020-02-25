@@ -20,7 +20,8 @@ app.use(express.urlencoded({
 }));
 app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use('/STORAGE', express.static(path.join(__dirname, 'STORAGE')))
+app.use('/STORAGE', express.static(path.join(__dirname, 'STORAGE')));
+app.use('/mdbootstrap', express.static(path.join(__dirname, 'node_modules', 'mdbootstrap')));
 
 app.use('/', indexRouter);
 //app.use('/users', usersRouter);

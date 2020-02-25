@@ -5,9 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="/mdbootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/mdbootstrap/css/mdb.min.css">
   <link rel="stylesheet" href="/public/stylesheets/all.min.css">
-  <link rel="stylesheet" href="/public/stylesheets/style.css">
   <link rel="stylesheet" href="/public/stylesheets/basic.css">
+  <link rel="stylesheet" href="/public/stylesheets/style.css">
   <title>Document</title>
 </head>
 
@@ -32,196 +34,297 @@
       }
     
   %>
-  <nav class="navbar">
-    <button class="create_folder">create folder</button>
-    <div class="options">
-      <button class="folder">folder</button>
-      <button class="upload_folder">upload folder</button>
-    </div>
+  <nav class="navbar navbar-dark indigo ">
+    <a class="navbar-brand" href="#">Link</a>
   </nav>
-  <div class="breadcrumb">
-    <ul>
-      <li class="active">
-        <span>
-          <i class="fas fa-folder"></i>
-          <span class="fdn">root</span>
-        </span>
-      </li>
-    </ul>
-  </div>
-  <div class="liste_dossiers">
-    <% if(root === 0){%>
-    <p>le dossier est vide</p>
-    <%}else{%>
-    <ul>
-      <% root.forEach(file => {%>
-      <% if(getType(file) === file){%>
-      <li onclick="openfolder(this)"><span class=" arrow">
-          <%}else if(getType(file) === "mp4"){%>
-      <li onmouseover="play(this)" onmouseout="stop(this)" onclick="fullscreen(this)"><span class="arrow">
-          <%}else{%>
-      <li><span class="arrow">
-          <%}%>
-                <i class="fas fa-arrow-alt-circle-right"></i></span>
-              <%if(getType(file) === "mp4"){ %>
-          <video width="200" height="100" muted loop="loop" controls="controls">
-            <source src="/STORAGE/<%= file %>#t=4,7" type="video/mp4" />
-          </video> <span class="namev"><%= file %></span>
-          <%}else if(verifImage(file)){%><img src="/STORAGE/<%= file %>" height="80">&nbsp;&nbsp;&nbsp;<span
-            class="name"><%= file %></span>
-          <%}else if(getType(file) === "mp3"){%>
-          <i class="fas fa-file-audio"></i>&nbsp;&nbsp;&nbsp;<span class="name"><%= file %></span>
-          <%}else if(getType(file) === file){%>
-          <i class="fas fa-folder"></i>&nbsp;&nbsp;&nbsp;<span class="name"><%= file %></span>
-          <%}else{%>
-          <i class="fas fa-file"></i>&nbsp;&nbsp;&nbsp;<span class="name"><%= file %></span>
-          <%}%>
-            <%if(getType(file) === file || getType(file) === "mp4"){%>
-          <i class="fas fa-trash" onmouseenter="block()" onmouseleave="unblock()" onclick="supp(this)"></i>
-          <%}else{%>
-          <i class="fas fa-trash" onclick="supp(this)"></i>
-          <%}%>
-                
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-xl-2 col-lg-3 col-md-3">
+        <aside>
+          <p>salut famille comment allez-vous</p>
+        </aside>
+      </div>
+      <div class="col-xl-10 col-lg-9 col-md-9">
+        <div class="bc-icons-2">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb indigo lighten-4">
+              <li class="breadcrumb-item"><a class="black-text" href="#"><i class="fas fa-home"></i></a></li>
+              &nbsp;&nbsp;&nbsp;|
+              <li class="breadcrumb-item"><a class="black-text" href="#">Library</a><i class="fas fa-caret-right mx-2"
+                  aria-hidden="true"></i></li>
+              <li class="breadcrumb-item active">Data</li>
+              <li class="breadcrumb-item">
+                <i class="fas fa-plus add"></i>
+                <ul class="dropDown">
+                  <li>
+                    <p class="dropdown-item w-100" data-toggle="modal" data-target="#uploadFile"><i
+                        class="fas fa-upload"></i> upload</p>
+                  </li>
+                  <li>
+                    <p class="dropdown-item new_folder"><i class="fas fa-folder"></i>
+                      <span class="text">nouveau dossier</span>
+                    </p>
+                  </li>
+                </ul>
               </li>
-          <%})%>
-    </ul>
-    <%}%>
-  </div>
- 
-    <div class="modal" style="display:none">
-      <div id="my-dropzone" class="dropzone">
-        <div class="dz-message">
-          <div class="col-xs-8">
-            <div class="message">
-              <p>déplacez les éléments ici où cliquer pour uploader<p>
-            </div>
-          </div>
-          <div class="fallback">
-            <input type="file" name="file" multiple />
-          </div>
+            </ol>
+          </nav>
+        </div>
+        <div class="folders_list">
+          <table>
+            <thead>
+              <th class="name"><input style="display: inline-block" type="checkbox"
+                  class="form-check globalCheck">&nbsp;&nbsp;&nbsp;&nbsp;<span style="display:inline-block">name</span>
+              </th>
+              <th class="size">size</th>
+              <th class="modified">modified</th>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="nameOptions">
+                  <div class="left"><i class="fas fa-image"></i> <input type="checkbox"
+                      class="form-check childCheck"><span class="file_name">image.jpeg</span></div>
+                  <div class="right"><i class="fas fa-share-alt"></i></div>
+                </td>
+                <td style="text-align: center">90 ko</td>
+                <td style="text-align: center">2 hours ago</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
-    <div class="modal2" style="display:none">
-      <h4>créer un nouveau dossier</h4>
-      <form>
-        <input type="text" id="dossier_name" required placeholder="entrez le nom du dossier">
-        <button>ok</button>
-      </form>
-    </div>
-    <script src="/public/javascripts/jquery.min.js"></script>
-    <script src="/public/javascripts/dropzone.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-      const socket = io();
-      Dropzone.autoDiscover = false;
-      const myDropzone = new Dropzone("#my-dropzone", {
-        url: "/upload-file"
-      });
-      Dropzone.options.myDropzone = {
-        paramName: 'file',
-      }
 
-      /* $('.modal button').on('click',function(){
-        myDropzone.options.autoProcessQueue = true;
-        myDropzone.processQueue();
-      }) */
 
-      myDropzone.on('queuecomplete', function () {
-        console.log('yeyeyeyeyeyeye');
-        $('.dz-message').show();
-        $('.dz-preview').hide();
-        $('.modal').fadeOut(300);
-        socket.emit('reload');
-      })
+      <div class="modal fade" id="uploadFile" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-md" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title w-100" id="myModalLabel">upload files</h4><button type="button" class="close"
+                data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;
+                </span></button>
+            </div>
+            <div class="modal-body">
+              <div class="table table-striped" class="files" id="previews">
 
-      let canSupp = true;
-      $(function () {
-        $('.modal').on('click', function () {
-          console.log($('.modal:hover').length > 0);
-        })
-        $('.upload_folder').on('click', function () {
-          $('.modal').css('display', 'block');
-        });
+                <div id="template" class="file-row">
+                  <!-- This is used as the file preview template -->
+                  <div class="dz-preview dz-file-preview">
+                    <div class="dz-details">
+                      <div class="dz-filename"><span data-dz-name></span></div>
+                      <div class="dz-size" data-dz-size></div>
+                      <img data-dz-thumbnail />
+                    </div>
+                    <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+                    <div class="dz-success-mark"><span>✔</span></div>
+                    <div class="dz-error-mark"><span>✘</span></div>
+                    <div class="dz-error-message"><span data-dz-errormessage></span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer"><button type="button" class="btn btn-primary start btn-sm"><i
+                    class="fas fa-upload"></i>start download </button><button type="button"
+                  class="btn btn-warning cancel btn-sm">cancel upload</button><button type="button"
+                  class="btn btn-danger btn-sm" data-dismiss="modal">Close</button></div>
+            </div>
+          </div>
+        </div>
 
-        //play and reset video on hover
-        $('video').on('mouseover', function () {
-          console.log('okok ok', this);
-          this.play();
-        }).on('mouseout', function () {
-          console.log('okokok', this);
-          this.reset();
-        })
 
-        //open the new folder modal
-        $('.create_folder').on('click', function () {
-          $('.modal2').css('display', 'block');
-        });
 
-        // going to create a new folder on form submit using socket.io
-        $('.modal2 form').on('submit', function (e) {
-          e.preventDefault();
-          $('.modal2').fadeOut(300);
-          socket.emit('create_folder', $('.modal2 form input').val());
-        });
+        <script src="/mdbootstrap/js/jquery.min.js"></script>
+        <script src="/mdbootstrap/js/popper.js"></script>
+        <script src="/mdbootstrap/js/bootstrap.min.js"></script>
+        <script src="/mdbootstrap/js/mdb.min.js"></script>
+        <script src="/public/javascripts/dropzone.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+          const socket = io();
 
-        /// action to pause, when the create or read folder is set
-        socket.on('success', (data, link, bool) => {
-          $('.modal2 input').val('');
-          if (bool) {
-            $('.breadcrumb ul').html(link);
+          var previewNode = document.querySelector("#template");
+          previewNode.id = "";
+          var previewTemplate = previewNode.parentNode.innerHTML;
+          previewNode.parentNode.removeChild(previewNode);
+
+          var myDropzone = new Dropzone(document.querySelector(
+            '#uploadFile .modal-body'), { // Make the whole body a dropzone
+            url: "/upload-file", // Set the url
+            thumbnailWidth: 80,
+            thumbnailHeight: 80,
+            parallelUploads: 20,
+            previewTemplate: previewTemplate,
+            autoQueue: true, // Make sure the files aren't queued until manually added
+            previewsContainer: "#previews", // Define the container to display the previews
+            clickable: "#uploadFile .modal-body" // Define the element that should be used as click trigger to select files.
+          });
+          // Hide the total progress bar when nothing's uploading anymore
+          myDropzone.on("queuecomplete", function (progress) {
+            alert('fini');
+          });
+
+          // Setup the buttons for all transfers
+          // The "add files" button doesn't need to be setup because the config
+          // `clickable` has already been specified.
+          document.querySelector("#uploadFile .modal-footer .start").onclick = function () {
+            myDropzone.enqueueFiles(myDropzone.getFilesWithStatus(Dropzone.ADDED));
+          };
+          document.querySelector("#uploadFile .modal-footer .cancel").onclick = function () {
+            myDropzone.removeAllFiles(true);
+          };
+
+          /* Dropzone.autoDiscover = false;
+           const myDropzone = new Dropzone("#my-dropzone", {
+             url: "/upload-file"
+           });
+           Dropzone.options.myDropzone = {
+             paramName: 'file',
+           } */
+
+          /* $('.modal button').on('click',function(){
+            myDropzone.options.autoProcessQueue = true;
+            myDropzone.processQueue();
+          }) 
+
+          myDropzone.on('queuecomplete', function () {
+            console.log('yeyeyeyeyeyeye');
+            $('.dz-message').show();
+            $('.dz-preview').hide();
+            $('.modal').fadeOut(300);
+            socket.emit('reload');
+          }) */
+
+          let canSupp = true;
+          let mouseOverDropDown = false;
+          $(function () {
+            $('.modal').on('click', function () {
+              console.log($('.modal:hover').length > 0);
+            })
+            $('.upload_folder').on('click', function () {
+              $('.modal').css('display', 'block');
+            });
+
+            //play and reset video on hover
+            $('video').on('mouseover', function () {
+              console.log('okok ok', this);
+              this.play();
+            }).on('mouseout', function () {
+              console.log('okokok', this);
+              this.reset();
+            })
+
+            //open the new folder modal
+            $('.create_folder').on('click', function () {
+              $('.modal2').css('display', 'block');
+            });
+
+            // going to create a new folder on form submit using socket.io
+            $('.modal2 form').on('submit', function (e) {
+              e.preventDefault();
+              $('.modal2').fadeOut(300);
+              socket.emit('create_folder', $('.modal2 form input').val());
+            });
+
+            /// action to pause, when the create or read folder is set
+            socket.on('success', (data, link, bool) => {
+              $('.modal2 input').val('');
+              if (bool) {
+                $('.breadcrumb ul').html(link);
+              }
+              $('.liste_dossiers').html(data);
+            })
+
+          })
+
+          // functions part
+          function openfolder(el) {
+            if (canSupp) {
+              socket.emit('openFolder', el.children[2].textContent)
+            }
           }
-          $('.liste_dossiers').html(data);
-        })
 
-      })
+          function openfolderb(el) {
+            socket.emit('openFolder', el.children[0].children[1].textContent)
+          }
 
-      // functions part
-      function openfolder(el) {
-        if (canSupp) {
-          socket.emit('openFolder', el.children[2].textContent)
-        }
-      }
+          function supp(el) {
+            socket.emit('delete', el.parentElement.children[2].textContent);
+          }
 
-      function openfolderb(el) {
-        socket.emit('openFolder', el.children[0].children[1].textContent)
-      }
+          function block() {
+            canSupp = false;
+          }
 
-      function supp(el) {
-        socket.emit('delete', el.parentElement.children[2].textContent);
-      }
+          function unblock() {
+            canSupp = true;
+          }
 
-      function block() {
-        canSupp = false;
-      }
+          function play(el) {
+            el.children[1].play();
+          }
 
-      function unblock() {
-        canSupp = true;
-      }
+          function stop(el) {
+            el.children[1].pause();
+            el.children[1].currentTime = 4;
+          }
 
-      function play(el) {
-        el.children[1].play();
-      }
+          function fullscreen(el) {
+            let Src = el.children[1].children[0].src;
+            console.log(Src);
+            const video = document.querySelector('#Video');
+            video.children[0].setAttribute('src', Src.slice(0, Src.indexOf('#')));
+            console.log(video);
+            video.play();
+            $('#Video').fadeIn(500);
+          }
 
-      function stop(el) {
-        el.children[1].pause();
-        el.children[1].currentTime = 4;
-      }
+          $('video').each(function () {
+            this.controls = false;
+            this.currentTime = 4;
+          })
 
-      function fullscreen(el) {
-        let Src = el.children[1].children[0].src;
-        console.log(Src);
-        const video = document.querySelector('#Video');
-        video.children[0].setAttribute('src', Src.slice(0, Src.indexOf('#')));
-        console.log(video);
-        video.play();
-        $('#Video').fadeIn(500);
-      }
+          $('.dropDown').on('mouseenter', function () {
+            mouseOverDropDown = true;
+          });
 
-      $('video').each(function () {
-        this.controls = false;
-        this.currentTime = 4;
-      })
-    </script>
+          $('.dropDown').on('mouseleave', function () {
+            mouseOverDropDown = false;
+          })
+
+          $('.add').on('mouseenter', function () {
+            mouseOverDropDown = true;
+          });
+
+          $('.add').on('mouseleave', function () {
+            mouseOverDropDown = false;
+          })
+
+          $('.add').on('click', function (e) {
+            $('.dropDown').fadeToggle(300);
+          })
+
+          $('.new_folder').on('click', function (e) {
+            e.preventDefault();
+            console.log($('.new_folder span').hasClass('text'));
+            if ($('.new_folder span').hasClass('text')) {
+              console.log('oui merci ooh');
+              $('.new_folder span').toggleClass('text');
+              $('.new_folder span').toggleClass('form');
+              $('.new_folder span.form').html(
+                '<form class="form-inline"><input type="text" id="name_folder" class="form-control mb-2" value="nouveau dossier" autofocus=true onfocus="this.select()"/></form>'
+              );
+            }
+          })
+
+          $(document).on('click', () => {
+            if (!mouseOverDropDown) {
+              if ($('.new_folder span').hasClass('form')) {
+                $('.new_folder span').toggleClass('text');
+                $('.new_folder span').toggleClass('form');
+                $('.new_folder span.text').html('nouveau dossier');
+              }
+              $('.dropDown').fadeOut(300);
+            }
+          })
+        </script>
 
 </html>
