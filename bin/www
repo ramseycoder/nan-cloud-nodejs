@@ -11,6 +11,10 @@ const path = require('path');
 const rootDirectory = path.join(__dirname, '../STORAGE');
 const fs = require('fs');
 const rimraf = require('rimraf');
+const db = require('../config/database');
+const {
+  globalQueries
+} = require('../Queries/globalQuerie');
 /**
  * Get port from environment and store in Express.
  */
@@ -21,7 +25,7 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
-
+db();
 var server = http.createServer(app);
 const io = require('socket.io').listen(server);
 /**
@@ -31,49 +35,46 @@ io.on('connection', socket => {
   console.log('user connected');
   folder_path = "";
   try {
-    socket.on('create_folder', async (data) => {
-      if (folder_path === "") {
-        fs.mkdirSync(path.join(rootDirectory, data), 775);
-        fs.chmodSync(path.join(rootDirectory, data), 0o775)
-        fs.readdir(rootDirectory, (err, files) => {
-          const res = onSucces(files, folder_path);
-          socket.emit('success', res.files, res.breadcrumb, false);
-        })
-      } else {
-        const dir = rootDirectory + '/' + folder_path
-        fs.mkdirSync(path.join(dir, data), 777);
-        fs.chmodSync(path.join(dir, data), 0o775)
-        fs.readdir(dir, (err, files) => {
-          const res = onSucces(files, folder_path);
-          socket.emit('success', res.files, res.breadcrumb, false);
-        })
+    socket.on('create_folder', async (r) => {
+      const data = {
+        foldername: folder,
+        folder: r
+      }
+      const resu = await globalQueries.setUnderFolder(data);
+      if (resu.etat) {
+        const resu2 = await globalQueries.ResultFiles(resu.data);
+        if (resu2.etat) {
+          const r = onSucces(resu2.result);
+          console.log(r);
+          socket.emit('success', r);
+        }
       }
     });
 
-    socket.on('openFolder', async (data) => {
-      let path2 = "";
-      if (folder_path === "") {
-        path2 = rootDirectory + `/${data}`;
-        folder_path += data;
-      } else if (folder_path.includes('/') && folder_path.split('/').includes(data)) {
-        let Tab = folder_path.split('/');
-        if (Tab.indexOf(data) === 0) {
-          path2 = rootDirectory + `/${data}`;
-          folder_path = data;
-        } else {
-          let link = Tab.slice(0, Tab.indexOf(data) + 1).join('/');
-          path2 = rootDirectory + `/${link}`;
-          folder_path = link;
-        }
-      } else {
-        path2 = rootDirectory + `/${folder_path}/${data}`;
-        folder_path += `/${data}`
-      }
-      fs.readdir(path2, (err, files) => {
-        const res = onSucces(files, folder_path);
-        socket.emit('success', res.files, res.breadcrumb, true);
-      })
-    });
+    /* socket.on('openFolder', async (data) => {
+       let path2 = "";
+       if (folder_path === "") {
+         path2 = rootDirectory + `/${data}`;
+         folder_path += data;
+       } else if (folder_path.includes('/') && folder_path.split('/').includes(data)) {
+         let Tab = folder_path.split('/');
+         if (Tab.indexOf(data) === 0) {
+           path2 = rootDirectory + `/${data}`;
+           folder_path = data;
+         } else {
+           let link = Tab.slice(0, Tab.indexOf(data) + 1).join('/');
+           path2 = rootDirectory + `/${link}`;
+           folder_path = link;
+         }
+       } else {
+         path2 = rootDirectory + `/${folder_path}/${data}`;
+         folder_path += `/${data}`
+       }
+       fs.readdir(path2, (err, files) => {
+         const res = onSucces(files, folder_path);
+         socket.emit('success', res.files, res.breadcrumb, true);
+       })
+     }); */
 
     socket.on('reload', () => {
       fs.readdir(rootDirectory + `${folder_path === "" ? "": '/'+folder_path }`, (err, files) => {
@@ -138,62 +139,71 @@ function verifPoint(str) {
   return tab[tab.length - 1];
 }
 
-function onSucces(files, link) {
-  let breadcrumb, pathZ;
-  // breadcrumb
-  if (!link.includes('/')) {
-    breadcrumb = `<li onclick='location.reload();'><span> <i class='fas fa-folder'></i><span class='fdn'>root</span></span></li><li class='active'><span> <i class='fas fa-folder'></i> <span class='fdn'>${link}</span></span></li>`;
-  } else {
-    breadcrumb = "<li onclick='location.reload();'><span><i class='fas fa-folder'></i> <span class='fdn'>root</span></span></li>";
-    link = link.split('/');
-    for (let i = 0; i < link.length; i++) {
-      if (i !== link.length - 1) {
-        breadcrumb += `<li onclick="openfolderb(this)" ><span><i class='fas fa-folder'></i> <span class='fdn'>${link[i]}</span></span></li>`;
-      } else {
-        breadcrumb += `<li class='active' ><span><i class='fas fa-folder'></i> <span class='fdn'>${link[i]}</span></span></li>`;
-      }
-    }
-  }
-  //path
+function onSucces(files) {
   if (files.length === 0) {
-    pathZ = '<p>le dossier est vide</p>';
+    return '<p>le dossier est vide</p>';
   } else {
-    let div = "<ul>";
+    let output = '';
     files.forEach(donne => {
-      let el = "";
-      if (getType(donne) === donne) {
-        el = '<li onclick="openfolder(this)" ><span class="arrow"><i class="fas fa-arrow-alt-circle-right"></i></span>';
-      } else if (getType(donne) === "mp4") {
-        el = '<li onmouseover="play(this)" onmouseout="stop(this)" onclick="fullscreen(this)"><span class="arrow"><i class="fas fa-arrow-alt-circle-right"></i></span>';
+      let el = "<tr>";
+      if (getType(donne.name) === donne.name) {
+        el += `
+            <td class="nameOptions">
+            <div class="left"><i class="fas fa-folder"></i> <input type="checkbox"
+                class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
+            <div class="right"><i class="fas fa-share-alt"></i></div>
+          </td>
+          <td style="text-align: center">${donne.size} ko</td>
+          <td style="text-align: center">${donne.date_creation}</td>
+        `;
+      } else if (getType(donne.name) === "mp4") {
+        el += `
+          <td class="nameOptions">
+          <div class="left"><i class="fas fa-video"></i> <input type="checkbox"
+              class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
+          <div class="right"><i class="fas fa-share-alt"></i></div>
+        </td>
+        <td style="text-align: center">${donne.size} ko</td>
+        <td style="text-align: center">${donne.date_creation}</td>
+      `;
+      } else if (getType(donne.name) === "mp3") {
+        el += `
+          <td class="nameOptions">
+          <div class="left"><i class="fas fa-audio"></i> <input type="checkbox"
+              class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
+          <div class="right"><i class="fas fa-share-alt"></i></div>
+        </td>
+        <td style="text-align: center">${donne.size} ko</td>
+        <td style="text-align: center">${donne.date_creation}</td>
+      `;
+      } else if (verifImage(donne.name)) {
+        el += `
+          <td class="nameOptions">
+          <div class="left"><i class="fas fa-image"></i> <input type="checkbox"
+              class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
+          <div class="right"><i class="fas fa-share-alt"></i></div>
+        </td>
+        <td style="text-align: center">${donne.size} ko</td>
+        <td style="text-align: center">${donne.date_creation}</td>
+      `;
       } else {
-        el = '<li><span class="arrow"><i class="fas fa-arrow-alt-circle-right"></i></span>';
+        el += `
+        <td class="nameOptions">
+        <div class="left"><i class="fas fa-file"></i> <input type="checkbox"
+            class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
+        <div class="right"><i class="fas fa-share-alt"></i></div>
+      </td>
+      <td style="text-align: center">${donne.size} ko</td>
+      <td style="text-align: center">${donne.date_creation}</td>
+    `;
       }
-      if (getType(donne) === "mp4") {
-        el += `<video width="200" height="100" muted loop="loop" controls="controls">
-            <source src="${folder_path === "" ? '/STORAGE/'+donne+'' : '/STORAGE/'+folder_path+'/'+donne}#t=4,7" type="video/mp4" />
-        </video>&nbsp;&nbsp;&nbsp;<span class="namev">${donne}</span>`;
-      } else if (verifImage(donne)) {
-        el += `<img src="/STORAGE/${folder_path === "" ? donne : folder_path+'/'+donne}" height="80">&nbsp;&nbsp;&nbsp;<span class="name">${donne}</span>`;
-      } else if (getType(donne) === "mp3") {
-        el += `<i class="fas fa-audio"></i>${donne}`;
-      } else if (getType(donne) === donne) {
-        el += `<i class="fas fa-folder"></i>&nbsp;&nbsp;&nbsp;<span class="name">${donne}</span>`;
-      } else {
-        el += `<i class="fas fa-file"></i>&nbsp;&nbsp;&nbsp;<span class="name">${donne}</span>`;
-      }
-      el += `${getType(donne) === donne || getType(donne) === 'mp4'  ? '<i class="fas fa-trash" onmouseenter="block()" onmouseleave="unblock()" onclick="supp(this)"></i>' : '<i class="fas fa-trash" onclick="supp(this)"></i>'} </li>`;
-      div += el;
-      el = '';
+      el += "</tr>";
+      output += el;
     });
-    div += '</ul>';
-    pathZ = div;
+    return output;
   }
-  return {
-    "breadcrumb": breadcrumb,
-    "files": pathZ
-  }
-
 }
+
 
 server.listen(port);
 server.on('error', onError);

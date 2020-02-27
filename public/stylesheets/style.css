@@ -99,6 +99,8 @@ table thead th.size {
     text-align: center;
 }
 
+
+
 table thead th.modified {
     width: 10%;
     text-align: center;
@@ -149,4 +151,27 @@ table tbody tr td.nameOptions .right {
     float: right;
     margin-right: 10px;
     margin-top: 15px;
+}
+
+#ombre {
+    width: 100%;
+    height: 100%;
+    background: black;
+    opacity: 0.7;
+    position: absolute;
+    text-align: center;
+    display: none;
+    z-index: 1;
+}
+
+#ombre p {
+    font-size: 30px;
+    color: white;
+    opacity: 1;
+    font-weight: bolder;
+    margin-top: 40%;
+}
+
+.folders_list {
+    height: 100vh;
 }
