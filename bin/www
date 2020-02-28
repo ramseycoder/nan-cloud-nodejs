@@ -33,11 +33,10 @@ const io = require('socket.io').listen(server);
  */
 io.on('connection', socket => {
   console.log('user connected');
-  folder_path = "";
   try {
     socket.on('create_folder', async (r) => {
       const data = {
-        foldername: folder,
+        foldername: folder_path === '' ? 'root' : folder_path.includes('/') ? folder_path.split('/')[folder_path.split('/').length - 1] : folder_path,
         folder: r
       }
       const resu = await globalQueries.setUnderFolder(data);
@@ -45,42 +44,17 @@ io.on('connection', socket => {
         const resu2 = await globalQueries.ResultFiles(resu.data);
         if (resu2.etat) {
           const r = onSucces(resu2.result);
-          console.log(r);
           socket.emit('success', r);
         }
       }
     });
 
-    /* socket.on('openFolder', async (data) => {
-       let path2 = "";
-       if (folder_path === "") {
-         path2 = rootDirectory + `/${data}`;
-         folder_path += data;
-       } else if (folder_path.includes('/') && folder_path.split('/').includes(data)) {
-         let Tab = folder_path.split('/');
-         if (Tab.indexOf(data) === 0) {
-           path2 = rootDirectory + `/${data}`;
-           folder_path = data;
-         } else {
-           let link = Tab.slice(0, Tab.indexOf(data) + 1).join('/');
-           path2 = rootDirectory + `/${link}`;
-           folder_path = link;
-         }
-       } else {
-         path2 = rootDirectory + `/${folder_path}/${data}`;
-         folder_path += `/${data}`
-       }
-       fs.readdir(path2, (err, files) => {
-         const res = onSucces(files, folder_path);
-         socket.emit('success', res.files, res.breadcrumb, true);
-       })
-     }); */
-
-    socket.on('reload', () => {
-      fs.readdir(rootDirectory + `${folder_path === "" ? "": '/'+folder_path }`, (err, files) => {
-        const res = onSucces(files, folder_path);
-        socket.emit('success', res.files, res.breadcrumb, false);
-      })
+    socket.on('reload', async () => {
+      const res = await globalQueries.getFolder(folder);
+      if (res.etat) {
+        const output = await globalQueries.ResultFiles(res.data);
+        socket.emit('success', onSucces(output.result));
+      }
     })
 
     socket.on('delete', (data) => {
@@ -143,6 +117,16 @@ function onSucces(files) {
   if (files.length === 0) {
     return '<p>le dossier est vide</p>';
   } else {
+    let bigOutput = `<table>
+    <thead>
+      <th class="name"><input style="display: inline-block" type="checkbox"
+          class="form-check globalCheck">&nbsp;&nbsp;&nbsp;&nbsp;<span
+          style="display:inline-block">name</span>
+      </th>
+      <th class="size">size</th>
+      <th class="modified">modified</th>
+    </thead>
+    <tbody>`;
     let output = '';
     files.forEach(donne => {
       let el = "<tr>";
@@ -150,7 +134,8 @@ function onSucces(files) {
         el += `
             <td class="nameOptions">
             <div class="left"><i class="fas fa-folder"></i> <input type="checkbox"
-                class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
+                class="form-check childCheck"><span class="file_name"><a
+                href="/app/files/?dir=${donne.name}&fileid=${donne.folder_id}">${donne.name}</a></span></div>
             <div class="right"><i class="fas fa-share-alt"></i></div>
           </td>
           <td style="text-align: center">${donne.size} ko</td>
@@ -162,8 +147,8 @@ function onSucces(files) {
           <div class="left"><i class="fas fa-video"></i> <input type="checkbox"
               class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
           <div class="right"><i class="fas fa-share-alt"></i></div>
-        </td>
-        <td style="text-align: center">${donne.size} ko</td>
+        </td>   
+        <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)} Mo</td>
         <td style="text-align: center">${donne.date_creation}</td>
       `;
       } else if (getType(donne.name) === "mp3") {
@@ -173,7 +158,7 @@ function onSucces(files) {
               class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
           <div class="right"><i class="fas fa-share-alt"></i></div>
         </td>
-        <td style="text-align: center">${donne.size} ko</td>
+        <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
         <td style="text-align: center">${donne.date_creation}</td>
       `;
       } else if (verifImage(donne.name)) {
@@ -183,7 +168,7 @@ function onSucces(files) {
               class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
           <div class="right"><i class="fas fa-share-alt"></i></div>
         </td>
-        <td style="text-align: center">${donne.size} ko</td>
+        <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
         <td style="text-align: center">${donne.date_creation}</td>
       `;
       } else {
@@ -193,14 +178,16 @@ function onSucces(files) {
             class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
         <div class="right"><i class="fas fa-share-alt"></i></div>
       </td>
-      <td style="text-align: center">${donne.size} ko</td>
+      <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)} Mo</td>
       <td style="text-align: center">${donne.date_creation}</td>
     `;
       }
       el += "</tr>";
       output += el;
     });
-    return output;
+    bigOutput += output;
+    bigOutput += `</tbody></table>`;
+    return bigOutput;
   }
 }
 

@@ -10,7 +10,7 @@ const FileSchema = new Schema({
         required: true
     },
     buffer: {
-        type: String,
+        type: Buffer,
     },
     mimetype: {
         type: String,
@@ -18,6 +18,9 @@ const FileSchema = new Schema({
     type: {
         type: String,
         required: true
+    },
+    folder_id: {
+        type: String
     },
     size: {
         type: Number,

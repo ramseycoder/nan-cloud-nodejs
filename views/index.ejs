@@ -48,11 +48,23 @@
         <div class="bc-icons-2">
           <nav aria-label="breadcrumb">
             <ol class="breadcrumb indigo lighten-4">
-              <li class="breadcrumb-item"><a class="black-text" href="#"><i class="fas fa-home"></i></a></li>
+              <% if(path === "none"){%>
+              <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a></li>
+              &nbsp;&nbsp;&nbsp;| <li class="breadcrumb-item">
+                <i class="fas fa-plus add"></i>
+                <ul class="dropDown">
+                  <li>
+                    <p class="dropdown-item new_folder"><i class="fas fa-folder"></i>
+                      <span class="text">nouveau dossier</span>
+                    </p>
+                  </li>
+                </ul>
+              </li>
+              <%}else if(typeof(path) === "string"){%>
+              <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a></li>
               &nbsp;&nbsp;&nbsp;|
-              <li class="breadcrumb-item"><a class="black-text" href="#">Library</a><i class="fas fa-caret-right mx-2"
-                  aria-hidden="true"></i></li>
-              <li class="breadcrumb-item active">Data</li>
+              <li class="breadcrumb-item active"><a class="black-text" href="#"><%= path %></a><i
+                  class="fas fa-caret-right mx-2" aria-hidden="true"></i></li>
               <li class="breadcrumb-item">
                 <i class="fas fa-plus add"></i>
                 <ul class="dropDown">
@@ -63,6 +75,29 @@
                   </li>
                 </ul>
               </li>
+              <%}else{%>
+              <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a></li>
+              &nbsp;&nbsp;&nbsp;|
+              <% path.forEach(el => {%>
+              <% if(path.indexOf(el) === path.length-1){%>
+              <li class="breadcrumb-item active"><a class="black-text" href="#"><%= el %></a><i
+                  class="fas fa-caret-right mx-2" aria-hidden="true"></i></li>
+              <%}else{%>
+              <li class="breadcrumb-item"><a class="black-text" href="/app/files/?dir=<%= el %>"><%= el %></a><i
+                  class="fas fa-caret-right mx-2" aria-hidden="true"></i></li>
+              <%}%>
+              <%})%>
+              <li class="breadcrumb-item">
+                <i class="fas fa-plus add"></i>
+                <ul class="dropDown">
+                  <li>
+                    <p class="dropdown-item new_folder"><i class="fas fa-folder"></i>
+                      <span class="text">nouveau dossier</span>
+                    </p>
+                  </li>
+                </ul>
+              </li>
+              <%}%>
             </ol>
           </nav>
         </div>
@@ -112,26 +147,70 @@
           </div>
         </div>
         <div class="folders_list">
-          <table>
-            <thead>
-              <th class="name"><input style="display: inline-block" type="checkbox"
-                  class="form-check globalCheck">&nbsp;&nbsp;&nbsp;&nbsp;<span style="display:inline-block">name</span>
-              </th>
-              <th class="size">size</th>
-              <th class="modified">modified</th>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="nameOptions">
-                  <div class="left"><i class="fas fa-image"></i> <input type="checkbox"
-                      class="form-check childCheck"><span class="file_name">image.jpeg</span></div>
-                  <div class="right"><i class="fas fa-share-alt"></i></div>
-                </td>
-                <td style="text-align: center">90 ko</td>
-                <td style="text-align: center">2 hours ago</td>
-              </tr>
-            </tbody>
-          </table>
+          <% if(files.length === 0){%>
+              <p>le dossier est vide</p>
+              <%}else{%>
+              <table>
+                <thead>
+                  <th class="name"><input style="display: inline-block" type="checkbox"
+                      class="form-check globalCheck">&nbsp;&nbsp;&nbsp;&nbsp;<span
+                      style="display:inline-block">name</span>
+                  </th>
+                  <th class="size">size</th>
+                  <th class="modified">modified</th>
+                </thead>
+                <tbody>
+                  <% files.forEach(file => { %>
+                  <tr>
+                    <% if(getType(file.name) === file.name){%>
+                    <td class="nameOptions">
+                      <div class="left"><i class="fas fa-folder"></i> <input type="checkbox"
+                          class="form-check childCheck"><span class="file_name"><a
+                            href="/app/files/?dir=<%= file.name %>&fileid=<%= file.folder_id %>"><%= file.name %></a></span>
+                      </div>
+                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                    </td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= file.date_creation %></td>
+                    <%} else if(verifImage(file.name)){%>
+                    <td class="nameOptions">
+                      <div class="left"><i class="fas fa-image"></i> <input type="checkbox"
+                          class="form-check childCheck"><span class="file_name"><%= file.name %></span></div>
+                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                    </td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= file.date_creation %></td>
+                    <%}else if(getType(file.name) === "mp4"){%>
+                    <td class="nameOptions">
+                      <div class="left"><i class="fas fa-video"></i> <input type="checkbox"
+                          class="form-check childCheck"><span class="file_name"><%= file.name %></span></div>
+                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                    </td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= file.date_creation %></td>
+                    <%}else if(getType(file.name) === "mp3"){ %>
+                    <td class="nameOptions">
+                      <div class="left"><i class="fas fa-audio-description"></i> <input type="checkbox"
+                          class="form-check childCheck"><span class="file_name"><%= file.name %></span>
+                      </div>
+                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                    </td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= file.date_creation %></td>
+                    <%}else{%>
+                    <td class="nameOptions">
+                      <div class="left"><i class="fas fa-file"></i> <input type="checkbox"
+                          class="form-check childCheck"><span class="file_name"><%= file.name %></span></div>
+                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                    </td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= file.date_creation %></td>
+                    <%}%>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+              <%}%>
         </div>
       </div>
 
@@ -170,6 +249,7 @@
         myDropzone.on('queuecomplete', function () {
           myDropzone.removeAllFiles();
           $('#ombre').fadeOut(300);
+          socket.emit('reload');
         })
 
         let canSupp = true;
@@ -184,17 +264,9 @@
 
           /// action to pause, when the create or read folder is set
           socket.on('success', (data) => {
-            console.log('breal', data);
-            $('table tbody').html(data);
+            $('.folders_list').html(data);
           })
         })
-
-        // functions part
-        function openfolder(el) {
-          if (canSupp) {
-            socket.emit('openFolder', el.children[2].textContent)
-          }
-        }
 
         function submitForm(el) {
           console.log('yes');
@@ -205,47 +277,6 @@
           $('.dropDown').fadeOut(300);
           socket.emit('create_folder', dat);
         }
-
-
-        function openfolderb(el) {
-          socket.emit('openFolder', el.children[0].children[1].textContent)
-        }
-
-        function supp(el) {
-          socket.emit('delete', el.parentElement.children[2].textContent);
-        }
-
-        function block() {
-          canSupp = false;
-        }
-
-        function unblock() {
-          canSupp = true;
-        }
-
-        function play(el) {
-          el.children[1].play();
-        }
-
-        function stop(el) {
-          el.children[1].pause();
-          el.children[1].currentTime = 4;
-        }
-
-        function fullscreen(el) {
-          let Src = el.children[1].children[0].src;
-          console.log(Src);
-          const video = document.querySelector('#Video');
-          video.children[0].setAttribute('src', Src.slice(0, Src.indexOf('#')));
-          console.log(video);
-          video.play();
-          $('#Video').fadeIn(500);
-        }
-
-        $('video').each(function () {
-          this.controls = false;
-          this.currentTime = 4;
-        })
 
         $('.dropDown').on('mouseenter', function () {
           mouseOverDropDown = true;

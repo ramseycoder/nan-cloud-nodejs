@@ -22,32 +22,45 @@ const upload = multer({
 });
 /* GET home page. */
 router.get('/', async (req, res) => {
-  fs.readdir(GeneralPahtName, (err, files) => {
-    if (files.length === 0) {
+  const Id = await globalQueries.getFolderId('root');
+  res.redirect(`app/files/?dir=/&fileid=${Id}`);
+})
+router.get('/app/files', async (req, res) => {
+  const Dir = req.query.dir;
+  const id = req.query.fileid;
+  if (!Dir.includes('/')) {
+    //const Id = await globalQueries.getFolderId(Dir);
+    folder_path = setPath(folder_path, Dir);
+    res.redirect(`/app/files/?dir=/${folder_path}&fileid=${id}`);
+  } else {
+    folder_path = Dir === '/' ? '' : folder_path;
+    let path = Dir === '/' ? 'none' : folder_path.includes('/') ? folder_path.split('/') : folder_path;
+    currentFolderId = id;
+    const resOne = await globalQueries.getFolderById(id);
+    if (resOne.etat) {
+      const output = await globalQueries.ResultFiles(resOne.data);
+      console.log('path', path);
       res.render('index', {
-        root: 0
-      });
-    } else {
-      res.render('index', {
-        root: files
+        path: path,
+        files: output.result
       });
     }
-  })
+  }
 });
 
+
 router.post('/upload-file', upload.single('file'), async (req, res) => {
-  console.log(req.file);
   const data = {};
   data.name = req.file.originalname.slice(0, verifPoint(req.file.originalname));
   data.mimetype = req.file.mimetype.slice(req.file.mimetype.indexOf('/') + 1, req.file.mimetype.length);
-  data.buffer = await getBase64(req.file.path).then(r => r);
+  data.buffer = Buffer.from(req.file.path, 'base64');
   data.size = req.file.size;
   data.type = "file";
-  data.foldername = folder;
+  data.folder_id = currentFolderId;
   const resu = await globalQueries.setFile(data);
   if (resu.etat) {
-    /* const output = await globalQueries.ResultFiles(resu.data);
-      if (output.etat) {
+    /*  const output = await globalQueries.ResultFiles(resu.data);
+      if (output.etat) {  
         console.log('result', output.result);
       } */
     res.json({
@@ -58,13 +71,30 @@ router.post('/upload-file', upload.single('file'), async (req, res) => {
 });
 
 
-function getBase64(link) {
-  return new Promise(async next => {
-    await base64.encode(link, function (err, res) {
-      console.log(res);
-      next(res);
-    });
-  })
+
+/* function getBase64(link) {
+   return new Promise(async next => {
+     await base64.encode(link, function (err, res) {
+       console.log(res);
+       next(res);
+     });
+   })
+ } */
+
+function setPath(Gpath, folder) {
+  if (Gpath === '') {
+    return `${folder}`;
+  } else {
+    let Tpath = Gpath.split('/');
+    if (Tpath.includes(folder)) {
+      console.log('un', Tpath);
+      Tpath = Tpath.slice(0, Tpath.indexOf(folder) + 1);
+      console.log('deux', Tpath);
+      return Tpath.join('/');
+    } else {
+      return Gpath + `/${folder}`;
+    }
+  }
 }
 
 function verifPoint(str) {

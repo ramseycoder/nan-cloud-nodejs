@@ -3,12 +3,13 @@ const Folder = require('../models/folder.model');
 const base64 = require('file-base64');
 const path = require('path');
 const Dir = path.join(__dirname, '../STORAGE');
+const fs = require('fs');
 exports.globalQueries = class {
     static setFile(data) {
         return new Promise(async next => {
             let folder;
             folder = await Folder.findOne({
-                name: data.foldername
+                _id: data.folder_id
             }).then(r => r);
             if (folder === null) {
                 folder = await new Folder({
@@ -42,34 +43,38 @@ exports.globalQueries = class {
     }
 
     static setUnderFolder(data) {
+        console.log('data', data);
         return new Promise(async next => {
             const folder = await Folder.findOne({
                 name: data.foldername
             }).then(r => r);
-            const file = new File({
-                name: data.folder,
-                type: "folder"
-            });
-            file.save();
             const folder2 = await new Folder({
                 name: data.folder
             });
-            folder2.save();
-            folder.files.push(file);
-            folder.save()
-            await Folder.findOne({
-                name: data.foldername
-            }).populate('files').then(r => {
-                next({
-                    etat: true,
-                    data: r
+            folder2.save().then(r => {
+                const file = new File({
+                    name: data.folder,
+                    type: "folder",
+                    folder_id: r._id
                 });
-            }).catch(e => {
-                next({
-                    etat: false,
-                    err: e
-                });
-            })
+                file.save();
+                folder.files.push(file);
+                folder.save().then(async r => {
+                    await Folder.findOne({
+                        name: r.name
+                    }).populate('files').then(r => {
+                        next({
+                            etat: true,
+                            data: r
+                        });
+                    }).catch(e => {
+                        next({
+                            etat: false,
+                            err: e
+                        });
+                    })
+                })
+            });
         })
     }
 
@@ -154,20 +159,64 @@ exports.globalQueries = class {
     }
 
 
+    static getFolderById(id) {
+        console.log('testoo', id);
+        return new Promise(async next => {
+            await Folder.findById(id).populate('files').then(r => {
+                console.log('000', r);
+                next({
+                    etat: true,
+                    data: r
+                });
+            }).catch(err => {
+                next({
+                    etat: false,
+                    err: err
+                });
+            });
+        })
+    }
+
+    static getFolderId(name) {
+        return new Promise(async next => {
+            await Folder.findOne({
+                name: name
+            }).populate('files').then(async r => {
+                if (r === null) {
+                    await new Folder({
+                        name: name
+                    }).save().then(re => {
+                        next(re._id);
+                    })
+                } else {
+                    next(r._id);
+                }
+            }).catch(err => {
+                next({
+                    etat: false,
+                    err: err
+                });
+            });
+        })
+    }
+
+
 
     static ResultFiles(data) {
         return new Promise(async next => {
             const output = [];
             await data.files.forEach(file => {
                 if (file.type === "file") {
-                    base64.decode(file.buffer, path.join(Dir, file.name + '.' + file.mimetype), function (err, data) {
-                        console.log('success');
+                    fs.writeFile(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, function (err) {
+                        if (err) throw err;
                     })
                 }
                 const obj = {};
-                obj.name = file.type === "file" ? file.name + '.' + file.mimetype : file.name;
+                obj._id = file._id,
+                    obj.name = file.type === "file" ? file.name + '.' + file.mimetype : file.name;
                 obj.size = file.type === "file" ? file.size : getAllFolderSize(file.name).then(r => r);
                 obj.date = file.date_creation;
+                obj.folder_id = file.folder_id;
                 output.push(obj);
             });
             next({
@@ -183,7 +232,6 @@ async function getAllFolderSize(data) {
         const folder = await Folder.findOne({
             name: data
         }).populate('files').then(res => res);
-        console.log('folder', folder);
         let size = 0;
         folder.files.forEach(file => {
             size += file.size;

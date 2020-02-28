@@ -13,7 +13,7 @@ const FolderSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
-    date_createion: {
+    date_creation: {
         type: Date,
         default: new Date()
     }
