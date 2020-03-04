@@ -135,7 +135,7 @@ function onSucces(files) {
             <td class="nameOptions">
             <div class="left"><i class="fas fa-folder"></i> <input type="checkbox"
                 class="form-check childCheck"><span class="file_name"><a
-                href="/app/files/?dir=${donne.name}&fileid=${donne.folder_id}">${donne.name}</a></span></div>
+                href="/app/files/?dir=${donne.name}">${donne.name}</a></span></div>
             <div class="right"><i class="fas fa-share-alt"></i></div>
           </td>
           <td style="text-align: center">${donne.size} ko</td>

@@ -42,6 +42,35 @@ exports.globalQueries = class {
         })
     }
 
+
+    static getUnderFolderId(data) {
+        let donne = {};
+        if (!data.includes('/')) {
+            donne.parent = "root";
+            donne.enfant = data;
+        } else {
+            const tab = data.split('/');
+            donne.parent = tab[tab.length - 2];
+            donne.enfant = tab[tab.length - 1];
+        }
+        console.log(donne);
+        return new Promise(async next => {
+            const folderRoot = await Folder.findOne({
+                name: donne.parent
+            }).populate('files').then(r => {
+                r.files.forEach(file => {
+                    if (file.name === donne.enfant) {
+                        next(file.folder_id);
+                    }
+                })
+            }).catch(err => {
+                next(err);
+            })
+        });
+
+    }
+
+
     static setUnderFolder(data) {
         console.log('data', data);
         return new Promise(async next => {

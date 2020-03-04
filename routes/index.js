@@ -28,10 +28,13 @@ router.get('/', async (req, res) => {
 router.get('/app/files', async (req, res) => {
   const Dir = req.query.dir;
   const id = req.query.fileid;
-  if (!Dir.includes('/')) {
+  if (id === undefined) {
     //const Id = await globalQueries.getFolderId(Dir);
+
     folder_path = setPath(folder_path, Dir);
-    res.redirect(`/app/files/?dir=/${folder_path}&fileid=${id}`);
+    const Id = await globalQueries.getUnderFolderId(folder_path);
+    console.log('id', Id);
+    res.redirect(`/app/files/?dir=/${folder_path}&fileid=${Id}`);
   } else {
     folder_path = Dir === '/' ? '' : folder_path;
     let path = Dir === '/' ? 'none' : folder_path.includes('/') ? folder_path.split('/') : folder_path;
