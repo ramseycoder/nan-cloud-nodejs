@@ -19,7 +19,7 @@ const {
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || '4000');
 app.set('port', port);
 
 /**
@@ -85,8 +85,20 @@ io.on('connection', socket => {
           }
         }  */
       };
+    });
 
-    })
+    socket.on('getFileInfo', async (fileid) => {
+      const res = await globalQueries.getFileInfo(fileid);
+      if (res.etat && res.type === "file") {
+        socket.emit('getFileInfo', res.data);
+      } else if (res.etat && res.type === "folder") {
+        const Data = {
+          data: res.data,
+          size: res.size
+        }
+        socket.emit('getFileInfo', Data);
+      }
+    });
   } catch (e) {
 
   }
@@ -129,7 +141,7 @@ function onSucces(files) {
     <tbody>`;
     let output = '';
     files.forEach(donne => {
-      let el = "<tr>";
+      let el = `<tr onclick='showRightSide(${donne._id})'>`;
       if (getType(donne.name) === donne.name) {
         el += `
             <td class="nameOptions">

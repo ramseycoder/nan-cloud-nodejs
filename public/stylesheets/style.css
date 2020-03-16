@@ -175,3 +175,87 @@ table tbody tr td.nameOptions .right {
 .folders_list {
     height: 100vh;
 }
+
+.right_content {
+    height: 100vh;
+    border: 2px solid darkgrey;
+    padding: 0 15px;
+    display: none;
+}
+
+.right_content i.fa-times-circle {
+    color: darkgrey;
+    font-weight: bolder;
+    font-size: 20px;
+    position: absolute;
+    right: 30px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+
+.right_content .contenu_article {
+    margin-top: 20px;
+}
+
+.right_content .contenu_article .repre i {
+    font-size: 70px;
+}
+
+.right_content .contenu_article .repre {
+    display: inline-block;
+    vertical-align: top;
+    width: 120px;
+    height: 70px;
+    text-align: center;
+}
+
+.right_content .contenu_article .info {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.right_content .contenu_article .info h3 {
+    font-weight: bolder;
+    font-size: 30px;
+}
+
+.right_content .nav-link.active {
+    font-weight: bolder;
+    color: black;
+    border-bottom: 2px solid darkgreen;
+    font-size: 16px;
+}
+
+
+.right_content .nav-link {
+    font-weight: bolder;
+    color: darkgrey;
+    font-size: 16px;
+}
+
+.right_content .tab-content {
+    padding-top: 10px;
+}
+
+.right_content .tab-content #partager button.share {
+    padding: 7px;
+    text-transform: lowercase;
+    font-size: 12px;
+    border-radius: 15px;
+}
+
+#passwordToShare {
+    font-size: 12px;
+    padding: 7px;
+    position: relative;
+    top: -20px;
+    border: 1px solid darkgrey;
+    display: none;
+}
+
+#dateToShare {
+    display: none;
+    position: relative;
+    top: -20px;
+}

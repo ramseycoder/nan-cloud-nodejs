@@ -41,7 +41,9 @@ router.get('/app/files', async (req, res) => {
     currentFolderId = id;
     const resOne = await globalQueries.getFolderById(id);
     if (resOne.etat) {
+      console.log('data', resOne.data);
       const output = await globalQueries.ResultFiles(resOne.data);
+      console.log('output', output);
       console.log('path', path);
       res.render('index', {
         path: path,

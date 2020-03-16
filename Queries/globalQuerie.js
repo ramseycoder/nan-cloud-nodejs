@@ -230,11 +230,36 @@ exports.globalQueries = class {
     }
 
 
+    static getFileInfo(id) {
+        return new Promise(async next => {
+            await File.findById(id).then(async r => {
+                if (r.type === "file") {
+                    next({
+                        etat: true,
+                        type: "file",
+                        data: r
+                    });
+                } else if (r.type === "folder") {
+                    next({
+                        etat: true,
+                        data: r,
+                        type: "folder",
+                        size: await getAllFolderSize(r.name).then(r => r)
+                    })
+                }
+            }).catch(err => {
+                next({
+                    etat: false,
+                    err: err
+                });
+            })
+        })
+    }
 
     static ResultFiles(data) {
         return new Promise(async next => {
             const output = [];
-            await data.files.forEach(file => {
+            await data.files.forEach(async (file, index) => {
                 if (file.type === "file") {
                     fs.writeFile(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, function (err) {
                         if (err) throw err;
@@ -243,29 +268,32 @@ exports.globalQueries = class {
                 const obj = {};
                 obj._id = file._id,
                     obj.name = file.type === "file" ? file.name + '.' + file.mimetype : file.name;
-                obj.size = file.type === "file" ? file.size : getAllFolderSize(file.name).then(r => r);
+                obj.size = file.type === 'file' ? file.size : await getAllFolderSize(file.name).then(r => r);
                 obj.date = file.date_creation;
                 obj.folder_id = file.folder_id;
                 output.push(obj);
-            });
-            next({
-                etat: true,
-                result: output
+                if (index === data.files.length - 1) {
+                    next({
+                        etat: true,
+                        result: output
+                    });
+                }
             });
         })
     }
 }
 
 async function getAllFolderSize(data) {
-    return new Promise(async next => {
-        const folder = await Folder.findOne({
-            name: data
-        }).populate('files').then(res => res);
-        let size = 0;
-        folder.files.forEach(file => {
+    const folder = await Folder.findOne({
+        name: data
+    }).populate('files').then(res => res);
+    let size = 0;
+    folder.files.forEach(async file => {
+        if (file.type === "folder") {
+            size += await getAllFolderSize(file.name).then(r => r);
+        } else {
             size += file.size;
-        });
-        next(size);
-    })
-
+        }
+    });
+    return size;
 }
