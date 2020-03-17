@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connection = async () => {
     try {
-        mongoose.connect('mongodb://127.0.0.1:27017/nanCloud', {
+        await mongoose.connect('mongodb://127.0.0.1:27017/nanCloud', {
             useNewUrlParser: true,
             useFindAndModify: false,
             useUnifiedTopology: true

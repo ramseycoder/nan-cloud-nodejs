@@ -12,6 +12,7 @@ const rootDirectory = path.join(__dirname, '../STORAGE');
 const fs = require('fs');
 const rimraf = require('rimraf');
 const db = require('../config/database');
+const rand = require('random-key');
 const {
   globalQueries
 } = require('../Queries/globalQuerie');
@@ -50,8 +51,12 @@ io.on('connection', socket => {
     });
 
     socket.on('reload', async () => {
+      console.log('ask for reload');
+      const folder = folder_path === '' ? 'root' : folder_path.includes('/') ? folder_path.split('/')[folder_path.split('/').length - 1] : folder_path;
+      console.log('folder', folder);
       const res = await globalQueries.getFolder(folder);
       if (res.etat) {
+        console.log('data', res.data);
         const output = await globalQueries.ResultFiles(res.data);
         socket.emit('success', onSucces(output.result));
       }
@@ -92,13 +97,29 @@ io.on('connection', socket => {
       if (res.etat && res.type === "file") {
         socket.emit('getFileInfo', res.data);
       } else if (res.etat && res.type === "folder") {
+        console.log('infd', res);
         const Data = {
-          data: res.data,
-          size: res.size
+          _id: res.data._id,
+          name: res.data.name,
+          type: res.data.type,
+          shared: res.data.shared,
+          sharedOptions: res.data.sharedOptions,
+          date_creation: res.data.date_creation,
+          size: res.size,
         }
         socket.emit('getFileInfo', Data);
       }
     });
+
+    socket.on('shared', async (data) => {
+      data.crypt_link = rand.generate(8);
+      console.log('datat', data);
+      const res = await globalQueries.setSharedFolder(data);
+      if (res.etat) {
+        console.log('result', res);
+        socket.emit('shared', res.data);
+      }
+    })
   } catch (e) {
 
   }
@@ -145,10 +166,10 @@ function onSucces(files) {
       if (getType(donne.name) === donne.name) {
         el += `
             <td class="nameOptions">
-            <div class="left"><i class="fas fa-folder"></i> <input type="checkbox"
+            <div class="left"><img src="/public/images/folder.png" width="50"> <input type="checkbox"
                 class="form-check childCheck"><span class="file_name"><a
                 href="/app/files/?dir=${donne.name}">${donne.name}</a></span></div>
-            <div class="right"><i class="fas fa-share-alt"></i></div>
+            <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
           </td>
           <td style="text-align: center">${donne.size} ko</td>
           <td style="text-align: center">${donne.date_creation}</td>
@@ -156,9 +177,9 @@ function onSucces(files) {
       } else if (getType(donne.name) === "mp4") {
         el += `
           <td class="nameOptions">
-          <div class="left"><i class="fas fa-video"></i> <input type="checkbox"
+          <div class="left"><img src="/public/images/video-player.png" width="50"></i> <input type="checkbox"
               class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
-          <div class="right"><i class="fas fa-share-alt"></i></div>
+          <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
         </td>   
         <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)} Mo</td>
         <td style="text-align: center">${donne.date_creation}</td>
@@ -168,7 +189,27 @@ function onSucces(files) {
           <td class="nameOptions">
           <div class="left"><i class="fas fa-audio"></i> <input type="checkbox"
               class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
-          <div class="right"><i class="fas fa-share-alt"></i></div>
+          <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
+        </td>
+        <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
+        <td style="text-align: center">${donne.date_creation}</td>
+      `;
+      } else if (getType(donne.name) === "pdf") {
+        el += `
+          <td class="nameOptions">
+          <div class="left"><img src="/public/images/pdf.png" width="50" /></i> <input type="checkbox"
+              class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
+          <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
+        </td>
+        <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
+        <td style="text-align: center">${donne.date_creation}</td>
+      `;
+      } else if (getType(donne.name) === "txt") {
+        el += `
+          <td class="nameOptions">
+          <div class="left"><img src="/public/images/txt.png" width="50" /></i> <input type="checkbox"
+              class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
+          <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
         </td>
         <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
         <td style="text-align: center">${donne.date_creation}</td>
@@ -176,9 +217,9 @@ function onSucces(files) {
       } else if (verifImage(donne.name)) {
         el += `
           <td class="nameOptions">
-          <div class="left"><i class="fas fa-image"></i> <input type="checkbox"
+          <div class="left"><img src="/public/images/pictures.png" width="50"> <input type="checkbox"
               class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
-          <div class="right"><i class="fas fa-share-alt"></i></div>
+          <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
         </td>
         <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
         <td style="text-align: center">${donne.date_creation}</td>
@@ -188,7 +229,7 @@ function onSucces(files) {
         <td class="nameOptions">
         <div class="left"><i class="fas fa-file"></i> <input type="checkbox"
             class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
-        <div class="right"><i class="fas fa-share-alt"></i></div>
+        <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
       </td>
       <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)} Mo</td>
       <td style="text-align: center">${donne.date_creation}</td>

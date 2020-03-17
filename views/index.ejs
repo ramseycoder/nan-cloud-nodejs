@@ -167,46 +167,79 @@
                   <tr onclick="showRightSide('<%= file._id %>')">
                     <% if(getType(file.name) === file.name){%>
                     <td class="nameOptions">
-                      <div class="left"><i class="fas fa-folder"></i> <input type="checkbox"
+                      <div class="left"><img src="/public/images/folder.png" width="50"> <input type="checkbox"
                           class="form-check childCheck"><span class="file_name"><a
                             href="/app/files/?dir=<%= file.name %>"><%= file.name %></a></span>
                       </div>
-                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                      <div class="right"><% if(file.shared){%> shared <%}else{%><i class="fas fa-share-alt"></i><%}%>
+                      </div>
                     </td>
-                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                    </td>
                     <td style="text-align: center"><%= file.date_creation %></td>
                     <%} else if(verifImage(file.name)){%>
                     <td class="nameOptions">
-                      <div class="left"><i class="fas fa-image"></i> <input type="checkbox"
+                      <div class="left"><img src="/public/images/pictures.png" width="50"></i> <input type="checkbox"
                           class="form-check childCheck"><span class="file_name"><%= file.name %></span></div>
-                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                      <div class="right"><% if(file.shared){%> shared <%}else{%><i class="fas fa-share-alt"></i><%}%>
+                      </div>
                     </td>
-                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                    </td>
                     <td style="text-align: center"><%= file.date_creation %></td>
                     <%}else if(getType(file.name) === "mp4"){%>
                     <td class="nameOptions">
-                      <div class="left"><i class="fas fa-video"></i> <input type="checkbox"
-                          class="form-check childCheck"><span class="file_name"><%= file.name %></span></div>
-                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                      <div class="left"><img src="/public/images/video-player.png" width="50"></i> <input
+                          type="checkbox" class="form-check childCheck"><span class="file_name"><%= file.name %></span>
+                      </div>
+                      <div class="right"><% if(file.shared){%> shared <%}else{%><i class="fas fa-share-alt"></i><%}%>
+                          </i></div>
                     </td>
-                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                    </td>
+                    <td style="text-align: center"><%= file.date_creation %></td>
+                    <%}else if(getType(file.name) === "pdf"){%>
+                    <td class="nameOptions">
+                      <div class="left"><img src="/public/images/pdf.png" width="50"></i> <input type="checkbox"
+                          class="form-check childCheck"><span class="file_name"><%= file.name %></span>
+                      </div>
+                      <div class="right"><% if(file.shared){%> shared <%}else{%><i class="fas fa-share-alt"></i><%}%>
+                          </i></div>
+                    </td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                    </td>
+                    <td style="text-align: center"><%= file.date_creation %></td>
+                    <%}else if(getType(file.name) === "txt"){%>
+                    <td class="nameOptions">
+                      <div class="left"><img src="/public/images/txt.png" width="50"></i> <input type="checkbox"
+                          class="form-check childCheck"><span class="file_name"><%= file.name %></span>
+                      </div>
+                      <div class="right"><% if(file.shared){%> shared <%}else{%><i class="fas fa-share-alt"></i><%}%>
+                          </i></div>
+                    </td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                    </td>
                     <td style="text-align: center"><%= file.date_creation %></td>
                     <%}else if(getType(file.name) === "mp3"){ %>
                     <td class="nameOptions">
                       <div class="left"><i class="fas fa-audio-description"></i> <input type="checkbox"
                           class="form-check childCheck"><span class="file_name"><%= file.name %></span>
                       </div>
-                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                      <div class="right"><% if(file.shared){%> shared <%}else{%><i class="fas fa-share-alt"></i><%}%>
+                          </i></div>
                     </td>
-                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                    </td>
                     <td style="text-align: center"><%= file.date_creation %></td>
                     <%}else{%>
                     <td class="nameOptions">
                       <div class="left"><i class="fas fa-file"></i> <input type="checkbox"
                           class="form-check childCheck"><span class="file_name"><%= file.name %></span></div>
-                      <div class="right"><i class="fas fa-share-alt"></i></div>
+                      <div class="right"><% if(file.shared){%> shared <%}else{%><i class="fas fa-share-alt"></i><%}%>
+                          </i></div>
                     </td>
-                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo</td>
+                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                    </td>
                     <td style="text-align: center"><%= file.date_creation %></td>
                     <%}%>
                       </tr>
@@ -243,6 +276,10 @@
                   <div class="tab-pane fade show active" id="commentaires" role="tabpanel" aria-labelledby="home-tab">ici le commenaires sur le dossier ou fichier</div>
                   <div class="tab-pane fade" id="partager" role="tabpanel" aria-labelledby="profile-tab">
                     <button class="btn btn-dark btn-sm share"  data-toggle="modal" data-target="#modalPoll-1">nouveau partage</button>
+                    <br><br>
+                    <ul>
+                  
+                    </ul>
                   </div>
                 </div>
             </div>
@@ -288,6 +325,7 @@
             <strong>les priviléges</strong>
           </p>
 
+          <input type="hidden" id="id_file">
           <div class="form-check mb-4">
             <input class="form-check-input" name="group1" type="radio" id="d" value="download" checked>
             <label class="form-check-label" for="d"> les utilisateurs  auront le droit uniquement que de télécharger l'élément partager</label>
@@ -320,7 +358,7 @@
           </div>
           <input class="form-control mb-4" type="date" id="dateToShare">
           <div class="md-form">
-            <textarea type="text" id="form79textarea" class="md-textarea form-control" rows="3"></textarea>
+            <textarea type="text" id="messageToShare" class="md-textarea form-control" rows="3"></textarea>
             <label for="form79textarea">message addressé aux utilisateurs</label>
           </div>
   
@@ -328,7 +366,7 @@
   
         <!--Footer-->
         <div class="modal-footer justify-content-center">
-          <a type="button" class="btn btn-primary waves-effect waves-light"> enoyer
+          <a type="button" onclick="getShareConfig()" class="btn btn-primary waves-effect waves-light"> enoyer
             <i class="fa fa-paper-plane ml-1"></i>
           </a>
           <a type="button" class="btn btn-outline-primary waves-effect" data-dismiss="modal">fermer</a>
@@ -345,6 +383,7 @@
       <script src="/mdbootstrap/js/mdb.min.js"></script>
       <script src="/public/javascripts/dropzone.js"></script>
       <script src="/socket.io/socket.io.js"></script>
+      <script src="/public/javascripts/fonctions.js"></script>
       <script>
         const socket = io();
 
@@ -389,10 +428,73 @@
 
           /// action to pause, when the create or read folder is set
           socket.on('success', (data) => {
+            
             $('.folders_list').html(data);
           })
 
           socket.on('getFileInfo',(data)=>{
+            let donne = "";
+            let el = '';
+            data.sharedOptions.forEach(opt => {
+                el += `
+                <li><span class="link">http://localhost:4000/shared/${opt.crypt_link}</span><div class="right"><i class="fas fa-edit"></i><i class="fas fa-trash"></i></div></li>
+                `;
+            });
+            $('#partager ul').html(el);
+            $('#id_file').val(data._id);
+            let nameFolder = data.type === "file" ? data.name + '.' +data.mimetype : data.name
+            console.log('data.name => ',nameFolder);
+            console.log('type => ',getType(nameFolder));
+            if(getType(nameFolder) === data.name){
+              donne = `<div class="repre">
+                        <img src="/public/images/folder.png" width="100" height="100" />
+                      </div>
+                      <div class="info">
+                        <h4>${nameFolder}</h4>
+                          <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                      </div>`
+            }else if(verifImage(nameFolder)){
+              donne = `<div class="repre">
+                        <img src="/STORAGE/${nameFolder}" width="100" height="100"/>
+                      </div>
+                      <div class="info">
+                          <h4>${nameFolder}</h4>
+                          <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                      </div>`
+            }else if(getType(nameFolder) === "mp3"){
+             donne =  `<div class="repre">
+                               <img src="/public/images/folder.png" width="100" height="100" />
+                      </div>
+                      <div class="info">
+                         <h4>${nameFolder}</h4>
+                          <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                      </div>`
+            }else if(getType(nameFolder) === "pdf"){
+              donne = `<div class="repre">
+                  <img src="/public/images/pdf.png" width="100" height="100" />
+                      </div>
+                      <div class="info">
+                        <h4>${nameFolder}</h4>
+                          <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                      </div>`
+            }else if(getType(nameFolder) === "txt"){
+              donne = `<div class="repre">
+                  <img src="/public/images/txt.png" width="100" height="100" />
+                      </div>
+                      <div class="info">
+                        <h4>${nameFolder}</h4>
+                          <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                      </div>`
+            }else if(getType(nameFolder) === "mp4"){
+              donne = `<div class="repre">
+                  <img src="/public/images/video-player.png" width="100" height="100" />
+                      </div>
+                      <div class="info">
+                        <h4>${nameFolder}</h4>
+                          <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                      </div>`
+            }
+            $('.right_content .contenu_article').html(donne)
             console.log('data => ',data);
             const boxContent = document.querySelector('.box_content');
             setTimeout(()=>{
@@ -402,6 +504,20 @@
               boxContent.children[0].classList.add('col-md-9');
             },200);
             $('.right_content').fadeIn(200);
+          });
+
+
+          socket.on('shared',(data)=>{
+            console.log('données',data);
+            $('#modalPoll-1').modal('hide');
+            resetSharedFormValue();
+            let el = '';
+            data.sharedOptions.forEach(opt => {
+                el += `
+                <li><span class="link">http://localhost:4000/shared/${opt.crypt_link}</span><div class="right"><i class="fas fa-edit"></i><i class="fas fa-trash"></i></div></li>
+                `;
+            });
+            $('#partager ul').html(el);
           })
         })
 
@@ -475,7 +591,7 @@
           }else{
             $('#dateToShare').fadeOut(300);
           }
-        })
+        });
 
         function showRightSide(fileid){
           socket.emit('getFileInfo',fileid);
@@ -490,6 +606,34 @@
             boxContent.children[0].classList.add('col-md-12');
           },200);
           $('.right_content').fadeOut(200);
+        }
+
+        function getShareConfig(){
+          let checkValue = '';
+          $('input[name="group1"]').each(function(){
+            if($(this).is(':checked')){
+              checkValue = $(this).val()
+            }
+          })
+            const data = {
+              id_file:  $('#id_file').val(),
+              privilege: checkValue.includes('&') ?
+              checkValue.split('&') :  [checkValue],
+              password: $('#passwordToShare').val(),
+              date: $('#dateToShare').val(),
+              message: $('#messageToShare').val()
+            }
+            console.log('shared', data);
+            socket.emit('shared',data);
+        } 
+
+        function resetSharedFormValue(){
+          $('#id_file').val('');
+          $('#passwordToShare').val('');
+          $('#passwordProtection').attr('checked',false);
+          $('#expirationDate').attr('checked',false);
+          $('#dateToShare').val('');
+          $('#messageToShare').val('');
         }
 
       </script>

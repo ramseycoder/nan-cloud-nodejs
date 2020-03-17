@@ -137,14 +137,13 @@ table tbody tr td.nameOptions .left input {
 }
 
 table tbody tr:hover td.nameOptions .left input {
-    display: block;
-
+    display: none;
 }
 
 table tbody tr td.nameOptions .left .file_name {
     font-size: 16px;
     position: relative;
-    top: -10px;
+    top: 0px;
 }
 
 table tbody tr td.nameOptions .right {
@@ -213,6 +212,7 @@ table tbody tr td.nameOptions .right {
 .right_content .contenu_article .info {
     display: inline-block;
     vertical-align: top;
+    width: 200px;
 }
 
 .right_content .contenu_article .info h3 {
@@ -243,6 +243,51 @@ table tbody tr td.nameOptions .right {
     text-transform: lowercase;
     font-size: 12px;
     border-radius: 15px;
+}
+
+.right_content .tab-content #partager ul {
+    list-style: none;
+    width: 100%;
+}
+
+.right_content .tab-content #partager ul li {
+    border-bottom: 1px solid darkgrey;
+    padding: auto 6px;
+    width: 100%;
+    margin-left: -30px;
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.right_content .tab-content #partager ul li .link {
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 10px;
+    font-weight: bolder;
+    font-size: 10px;
+}
+
+.right_content .tab-content #partager ul li .right {
+    display: inline-block;
+    vertical-align: top;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.right_content .tab-content #partager ul li .right i {
+    font-size: 18px;
+    margin: auto 5px;
+    cursor: pointer;
+}
+
+.right_content .tab-content #partager ul li .right i.fa-edit {
+    color: black;
+}
+
+.right_content .tab-content #partager ul li .right i.fa-trash {
+    color: red;
 }
 
 #passwordToShare {

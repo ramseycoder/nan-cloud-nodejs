@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 global.folder_path = "";
 global.currentFolderId = "";
+global.Folder = "";
 var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -20,7 +21,7 @@ app.use(express.urlencoded({
 }));
 app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use('/STORAGE', express.static(path.join(__dirname, 'STORAGE')));
+app.use('/STORAGE', express.static(path.join(__dirname, 'BigData')));
 app.use('/mdbootstrap', express.static(path.join(__dirname, 'node_modules', 'mdbootstrap')));
 
 app.use('/', indexRouter);

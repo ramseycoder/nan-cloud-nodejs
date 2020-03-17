@@ -2,7 +2,7 @@ const File = require('../models/file.model');
 const Folder = require('../models/folder.model');
 const base64 = require('file-base64');
 const path = require('path');
-const Dir = path.join(__dirname, '../STORAGE');
+const Dir = path.join(__dirname, '../BigData');
 const fs = require('fs');
 exports.globalQueries = class {
     static setFile(data) {
@@ -53,7 +53,6 @@ exports.globalQueries = class {
             donne.parent = tab[tab.length - 2];
             donne.enfant = tab[tab.length - 1];
         }
-        console.log(donne);
         return new Promise(async next => {
             const folderRoot = await Folder.findOne({
                 name: donne.parent
@@ -72,7 +71,6 @@ exports.globalQueries = class {
 
 
     static setUnderFolder(data) {
-        console.log('data', data);
         return new Promise(async next => {
             const folder = await Folder.findOne({
                 name: data.foldername
@@ -189,10 +187,8 @@ exports.globalQueries = class {
 
 
     static getFolderById(id) {
-        console.log('testoo', id);
         return new Promise(async next => {
             await Folder.findById(id).populate('files').then(r => {
-                console.log('000', r);
                 next({
                     etat: true,
                     data: r
@@ -229,6 +225,54 @@ exports.globalQueries = class {
         })
     }
 
+    static setSharedFolder(data) {
+        return new Promise(async next => {
+            const file = await File.findById(data.id_file).then(r => r);
+            file.shared = true;
+            if (file.type === "folder") {
+                file.save();
+                const folder = await Folder.findById(file.folder_id).then(r => r);
+                folder.shared = true,
+                    folder.sharedOptions.push({
+                        crypt_link: data.crypt_link,
+                        privileges: data.privilege,
+                        password: data.password,
+                        expirationDate: data.date,
+                        message: data.message
+                    });
+                folder.save().then(r => {
+                    next({
+                        etat: true,
+                        data: r
+                    })
+                }).catch(err => {
+                    next({
+                        etat: false,
+                        err: err,
+                    })
+                });
+            } else {
+                file.sharedOptions.push({
+                    crypt_link: data.crypt_link,
+                    privileges: data.privilege,
+                    password: data.password,
+                    expirationDate: data.date,
+                    message: data.message
+                });
+                file.save().then(r => {
+                    next({
+                        etat: true,
+                        data: r
+                    });
+                }).catch(err => {
+                    next({
+                        etat: false,
+                        err: err
+                    })
+                });
+            }
+        });
+    }
 
     static getFileInfo(id) {
         return new Promise(async next => {
@@ -240,12 +284,15 @@ exports.globalQueries = class {
                         data: r
                     });
                 } else if (r.type === "folder") {
-                    next({
-                        etat: true,
-                        data: r,
-                        type: "folder",
-                        size: await getAllFolderSize(r.name).then(r => r)
-                    })
+                    await Folder.findById(r.folder_id).then(s => {
+                        next({
+                            etat: true,
+                            data: s,
+                            type: "folder",
+                            size: await getAllFolderSize(r.name).then(r => r)
+                        })
+                    });
+
                 }
             }).catch(err => {
                 next({
@@ -259,26 +306,38 @@ exports.globalQueries = class {
     static ResultFiles(data) {
         return new Promise(async next => {
             const output = [];
-            await data.files.forEach(async (file, index) => {
-                if (file.type === "file") {
-                    fs.writeFile(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, function (err) {
-                        if (err) throw err;
-                    })
-                }
-                const obj = {};
-                obj._id = file._id,
+            if (data.files.length == 0) {
+                next({
+                    etat: true,
+                    result: output
+                });
+            } else {
+                data.files.forEach(async (file, index) => {
+                    if (file.type === "file" && file.mimetype !== "mp4") {
+                        await fs.writeFileSync(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, function (err) {
+                            if (err) throw err;
+                            console.log('err', err);
+                            console.log('writing file succesfuly');
+                        })
+                    }
+                    const obj = {};
+                    obj._id = file._id;
                     obj.name = file.type === "file" ? file.name + '.' + file.mimetype : file.name;
-                obj.size = file.type === 'file' ? file.size : await getAllFolderSize(file.name).then(r => r);
-                obj.date = file.date_creation;
-                obj.folder_id = file.folder_id;
-                output.push(obj);
-                if (index === data.files.length - 1) {
-                    next({
-                        etat: true,
-                        result: output
-                    });
-                }
-            });
+                    obj.size = file.type === 'file' ? file.size : await getAllFolderSize(file.name).then(r => r);
+                    obj.shared = file.shared;
+                    obj.sharedOptions = file.sharedOptions;
+                    obj.date = file.date_creation;
+                    if (file.type === "folder") obj.folder_id = file.folder_id;
+                    output.push(obj);
+                    console.log('outut', output);
+                    if (index === data.files.length - 1) {
+                        next({
+                            etat: true,
+                            result: output
+                        });
+                    }
+                });
+            }
         })
     }
 }

@@ -3,7 +3,9 @@ var router = express.Router();
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 const base64 = require('file-base64');
+const grid = require('gridfs-stream');
 const {
   globalQueries
 } = require('../Queries/globalQuerie');
@@ -20,17 +22,19 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage
 });
+
+
 /* GET home page. */
 router.get('/', async (req, res) => {
   const Id = await globalQueries.getFolderId('root');
+  console.log('redirection');
   res.redirect(`app/files/?dir=/&fileid=${Id}`);
-})
+});
 router.get('/app/files', async (req, res) => {
   const Dir = req.query.dir;
   const id = req.query.fileid;
   if (id === undefined) {
     //const Id = await globalQueries.getFolderId(Dir);
-
     folder_path = setPath(folder_path, Dir);
     const Id = await globalQueries.getUnderFolderId(folder_path);
     console.log('id', Id);
@@ -44,7 +48,7 @@ router.get('/app/files', async (req, res) => {
       console.log('data', resOne.data);
       const output = await globalQueries.ResultFiles(resOne.data);
       console.log('output', output);
-      console.log('path', path);
+      // console.log('path', path);
       res.render('index', {
         path: path,
         files: output.result
@@ -55,22 +59,48 @@ router.get('/app/files', async (req, res) => {
 
 
 router.post('/upload-file', upload.single('file'), async (req, res) => {
-  const data = {};
-  data.name = req.file.originalname.slice(0, verifPoint(req.file.originalname));
-  data.mimetype = req.file.mimetype.slice(req.file.mimetype.indexOf('/') + 1, req.file.mimetype.length);
-  data.buffer = Buffer.from(req.file.path, 'base64');
-  data.size = req.file.size;
-  data.type = "file";
-  data.folder_id = currentFolderId;
-  const resu = await globalQueries.setFile(data);
-  if (resu.etat) {
-    /*  const output = await globalQueries.ResultFiles(resu.data);
-      if (output.etat) {  
-        console.log('result', output.result);
-      } */
-    res.json({
-      status: true,
-      message: 'merci à vous'
+  let mimetype = req.file.mimetype.slice(req.file.mimetype.indexOf('/') + 1, req.file.mimetype.length);
+  if (mimetype === "mp4") {
+    const B = {};
+    B.name = req.file.originalname.slice(0, verifPoint(req.file.originalname));
+    B.mimetype = req.file.mimetype.slice(req.file.mimetype.indexOf('/') + 1, req.file.mimetype.length);
+    fs.createReadStream(req.file.path).pipe(fs.createWriteStream(path.join(__dirname, '../BigData', req.file.originalname)));
+    B.buffer = null
+    B.type = "file";
+    B.size = req.file.size;
+    B.folder_id = currentFolderId;
+    const resu = await globalQueries.setFile(B);
+    if (resu.etat) {
+      /*  const output = await globalQueries.ResultFiles(resu.data);
+        if (output.etat) {  
+          console.log('result', output.result);
+        } */
+      res.json({
+        status: true,
+        message: 'merci à vous'
+      });
+    }
+  } else {
+    fs.readFile(req.file.path, async (err, data) => {
+      if (err) throw err;
+      const B = {};
+      B.name = req.file.originalname.slice(0, verifPoint(req.file.originalname));
+      B.mimetype = req.file.mimetype.slice(req.file.mimetype.indexOf('/') + 1, req.file.mimetype.length);
+      B.buffer = Buffer.from(data, 'base64');
+      B.size = req.file.size;
+      B.type = "file";
+      B.folder_id = currentFolderId;
+      const resu = await globalQueries.setFile(B);
+      if (resu.etat) {
+        /*  const output = await globalQueries.ResultFiles(resu.data);
+          if (output.etat) {  
+            console.log('result', output.result);
+          } */
+        res.json({
+          status: true,
+          message: 'merci à vous'
+        });
+      }
     });
   }
 });
