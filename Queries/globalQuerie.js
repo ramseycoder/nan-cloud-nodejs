@@ -24,14 +24,23 @@ exports.globalQueries = class {
                 size: data.size
             });
             file.save();
+            folder.size += file.size
             folder.files.push(file);
             folder.save();
             await Folder.findOne({
-                name: data.foldername
-            }).populate('files').then(r => {
+                _id: data.folder_id
+            }).then(async r => {
+                await File.findOne({
+                    folder_id: r._id
+                }).then(s => {
+                    console.log('sss', s);
+                    if (s !== null) {
+                        s.size = r.size;
+                        s.save();
+                    }
+                });
                 next({
                     etat: true,
-                    data: r
                 });
             }).catch(e => {
                 next({
@@ -59,11 +68,17 @@ exports.globalQueries = class {
             }).populate('files').then(r => {
                 r.files.forEach(file => {
                     if (file.name === donne.enfant) {
-                        next(file.folder_id);
+                        next({
+                            etat: true,
+                            data: file.folder_id
+                        });
                     }
                 })
             }).catch(err => {
-                next(err);
+                next({
+                    etat: false,
+                    err: err
+                });
             })
         });
 
@@ -88,7 +103,7 @@ exports.globalQueries = class {
                 folder.files.push(file);
                 folder.save().then(async r => {
                     await Folder.findOne({
-                        name: r.name
+                        name: data.foldername
                     }).populate('files').then(r => {
                         next({
                             etat: true,
@@ -211,10 +226,16 @@ exports.globalQueries = class {
                     await new Folder({
                         name: name
                     }).save().then(re => {
-                        next(re._id);
+                        next({
+                            etat: true,
+                            data: re._id
+                        });
                     })
                 } else {
-                    next(r._id);
+                    next({
+                        etat: true,
+                        data: r._id
+                    });
                 }
             }).catch(err => {
                 next({
@@ -283,17 +304,15 @@ exports.globalQueries = class {
                         type: "file",
                         data: r
                     });
-                } else if (r.type === "folder") {
-                    await Folder.findById(r.folder_id).then(s => {
-                        next({
-                            etat: true,
-                            data: s,
-                            type: "folder",
-                            size: await getAllFolderSize(r.name).then(r => r)
-                        })
-                    });
-
+                } else {
+                    next({
+                        etat: true,
+                        type: "folder",
+                        data: r,
+                        size: r.size + await getAllFolderSize(r.name).then(r => r)
+                    })
                 }
+
             }).catch(err => {
                 next({
                     etat: false,
@@ -313,23 +332,32 @@ exports.globalQueries = class {
                 });
             } else {
                 data.files.forEach(async (file, index) => {
+                    console.log('file', file);
+                    let r = file.type === 'file' ? file.size : 20;
                     if (file.type === "file" && file.mimetype !== "mp4") {
-                        await fs.writeFileSync(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, function (err) {
+                        fs.writeFileSync(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, function (err) {
                             if (err) throw err;
-                            console.log('err', err);
                             console.log('writing file succesfuly');
                         })
                     }
                     const obj = {};
-                    obj._id = file._id;
-                    obj.name = file.type === "file" ? file.name + '.' + file.mimetype : file.name;
-                    obj.size = file.type === 'file' ? file.size : await getAllFolderSize(file.name).then(r => r);
-                    obj.shared = file.shared;
-                    obj.sharedOptions = file.sharedOptions;
-                    obj.date = file.date_creation;
-                    if (file.type === "folder") obj.folder_id = file.folder_id;
+                    if (file.type === "file") {
+                        obj._id = file._id;
+                        obj.name = file.name + '.' + file.mimetype;
+                        obj.size = r;
+                        obj.shared = file.shared;
+                        obj.sharedOptions = file.sharedOptions;
+                        obj.date = file.date_creation;
+                    } else {
+                        obj._id = file._id;
+                        obj.name = file.name;
+                        obj.size = file.size + r;
+                        obj.shared = file.shared;
+                        obj.sharedOptions = file.sharedOptions;
+                        obj.date = file.date_creation;
+                        obj.folder_id = file.folder_id;
+                    }
                     output.push(obj);
-                    console.log('outut', output);
                     if (index === data.files.length - 1) {
                         next({
                             etat: true,
@@ -342,17 +370,17 @@ exports.globalQueries = class {
     }
 }
 
+
 async function getAllFolderSize(data) {
-    const folder = await Folder.findOne({
-        name: data
-    }).populate('files').then(res => res);
     let size = 0;
-    folder.files.forEach(async file => {
-        if (file.type === "folder") {
-            size += await getAllFolderSize(file.name).then(r => r);
-        } else {
-            size += file.size;
-        }
+    await Folder.findOne({
+        name: data
+    }).populate('files').then(s => {
+        s.files.forEach(file => {
+            if (file.type === "folder") {
+                size += file.size
+            }
+        })
     });
     return size;
 }

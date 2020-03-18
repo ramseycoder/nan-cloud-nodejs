@@ -27,8 +27,11 @@ const upload = multer({
 /* GET home page. */
 router.get('/', async (req, res) => {
   const Id = await globalQueries.getFolderId('root');
-  console.log('redirection');
-  res.redirect(`app/files/?dir=/&fileid=${Id}`);
+  console.log('result', Id);
+  if (Id.etat) {
+    console.log('result', Id);
+    res.redirect(`app/files/?dir=/&fileid=${Id.data}`);
+  }
 });
 router.get('/app/files', async (req, res) => {
   const Dir = req.query.dir;
@@ -37,22 +40,24 @@ router.get('/app/files', async (req, res) => {
     //const Id = await globalQueries.getFolderId(Dir);
     folder_path = setPath(folder_path, Dir);
     const Id = await globalQueries.getUnderFolderId(folder_path);
-    console.log('id', Id);
-    res.redirect(`/app/files/?dir=/${folder_path}&fileid=${Id}`);
+    if (Id.etat) {
+      res.redirect(`/app/files/?dir=/${folder_path}&fileid=${Id.data}`);
+    }
   } else {
     folder_path = Dir === '/' ? '' : folder_path;
     let path = Dir === '/' ? 'none' : folder_path.includes('/') ? folder_path.split('/') : folder_path;
     currentFolderId = id;
     const resOne = await globalQueries.getFolderById(id);
     if (resOne.etat) {
-      console.log('data', resOne.data);
       const output = await globalQueries.ResultFiles(resOne.data);
-      console.log('output', output);
+      if (output.etat) {
+        console.log('result', output.result);
+        res.render('index', {
+          path: path,
+          files: output.result
+        });
+      }
       // console.log('path', path);
-      res.render('index', {
-        path: path,
-        files: output.result
-      });
     }
   }
 });
@@ -122,9 +127,7 @@ function setPath(Gpath, folder) {
   } else {
     let Tpath = Gpath.split('/');
     if (Tpath.includes(folder)) {
-      console.log('un', Tpath);
       Tpath = Tpath.slice(0, Tpath.indexOf(folder) + 1);
-      console.log('deux', Tpath);
       return Tpath.join('/');
     } else {
       return Gpath + `/${folder}`;

@@ -20,7 +20,7 @@ const {
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '4000');
+var port = normalizePort(process.env.PORT || '5000');
 app.set('port', port);
 
 /**
@@ -51,14 +51,14 @@ io.on('connection', socket => {
     });
 
     socket.on('reload', async () => {
-      console.log('ask for reload');
       const folder = folder_path === '' ? 'root' : folder_path.includes('/') ? folder_path.split('/')[folder_path.split('/').length - 1] : folder_path;
       console.log('folder', folder);
       const res = await globalQueries.getFolder(folder);
       if (res.etat) {
-        console.log('data', res.data);
         const output = await globalQueries.ResultFiles(res.data);
-        socket.emit('success', onSucces(output.result));
+        if (output.etat) {
+          socket.emit('success', onSucces(output.result));
+        }
       }
     })
 

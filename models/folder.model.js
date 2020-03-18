@@ -24,7 +24,10 @@ const FolderSchema = new Schema({
         expirationDate: Date,
         message: String
     }],
-
+    size: {
+        type: Number,
+        default: 0,
+    },
     date_creation: {
         type: Date,
         default: new Date()

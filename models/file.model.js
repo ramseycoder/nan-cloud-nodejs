@@ -18,10 +18,12 @@ const FileSchema = new Schema({
         required: true
     },
     folder_id: {
-        type: String
+        type: String,
+        default: null,
     },
     size: {
         type: Number,
+        default: 0
     },
     shared: {
         type: Boolean,
