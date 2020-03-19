@@ -380,6 +380,10 @@ exports.globalQueries = class {
     }
 
 
+
+
+
+
     static getAllSharedFiles() {
         return new Promise(async next => {
             let BigObject = {};
@@ -418,6 +422,59 @@ exports.globalQueries = class {
                         });
                     }
                 })
+            })
+        });
+    }
+
+    static getFileSize(name) {
+        return new Promise(async next => {
+            await File.findOne({
+                name: name
+            }).then(r => {
+                next({
+                    etat: true,
+                    data: r.size
+                });
+            })
+        });
+    }
+
+    static deleteFiles(files) {
+        return new Promise(async next => {
+            files.forEach(async (file, index) => {
+                if (file["type"] === "file") {
+                    await File.findOneAndRemove({
+                        name: file["file"]
+                    });
+                } else {
+                    await File.findOneAndRemove({
+                        name: file["file"]
+                    });
+                    await Folder.findOne({
+                        name: file["file"]
+                    }).populate('files').then(r => {
+                        let F = [];
+                        r.files.forEach(async (f, index) => {
+                            F.push({
+                                "type": f.type,
+                                "file": f.name
+                            });
+                            if (index === r.files.length - 1) {
+                                let s = await this.deleteFiles(F);
+                                if (s.etat) {
+                                    await Folder.findOneAndRemove({
+                                        name: file['file']
+                                    })
+                                }
+                            }
+                        })
+                    });
+                }
+                if (index === files.length - 1) {
+                    next({
+                        etat: true
+                    });
+                }
             })
         });
     }

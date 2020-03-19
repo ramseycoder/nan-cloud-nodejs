@@ -21,5 +21,6 @@ router.get('/app/files', globalController.appFiles);
 router.post('/upload-file', upload.single('file'), globalController.uploadFile);
 router.get('/shared', globalController.shared2);
 router.get('/shared/:key', globalController.shared1);
+router.post('/shared/:key', globalController.shared1Post);
 
 module.exports = router;

@@ -115,12 +115,14 @@ table tbody tr {
 }
 
 table tbody tr:hover {
-    background: rgb(203, 203, 203);
+    background: rgb(203, 203, 203) !important;
 
 }
 
 table tbody tr td.nameOptions .left {
     float: left;
+    position: relative;
+    width: 50%;
 }
 
 table tbody tr td.nameOptions .left i {
@@ -128,22 +130,25 @@ table tbody tr td.nameOptions .left i {
 }
 
 table tbody tr td.nameOptions .left input {
-    display: inline-block;
     position: absolute;
     bottom: 16px;
-    left: 3.7%;
+    left: 6%;
+    top: 75%;
+    z-index: 1;
     display: none;
     transition: all 0.25S ease-in-out;
 }
 
 table tbody tr:hover td.nameOptions .left input {
-    display: none;
+    display: block;
 }
 
 table tbody tr td.nameOptions .left .file_name {
     font-size: 16px;
-    position: relative;
-    top: 0px;
+    position: absolute;
+    z-index: 0;
+    left: 9%;
+    top: 15px;
 }
 
 table tbody tr td.nameOptions .right {
@@ -333,4 +338,29 @@ table tbody tr td.nameOptions .right {
     color: white;
     float: left;
     font-weight: bolder;
+}
+
+.deleteDownload {
+    display: none;
+    width: 100%;
+    text-align: center;
+}
+
+.deleteDownload .taille {
+    font-weight: bolder;
+    font-size: 20px;
+}
+
+.deleteDownload i {
+    font-size: 20px;
+    margin: auto 10px;
+    cursor: pointer;
+}
+
+.deleteDownload i.fa-download {
+    color: darkgrey;
+}
+
+.deleteDownload i.fa-trash {
+    color: red;
 }

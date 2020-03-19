@@ -35,7 +35,7 @@
       }
     
   %>
-    <p class="privileges"><%= privileges %></p>
+    <p class="privileges" style="display:none"><%= privileges %></p>
     <nav class="navbar navbar-dark indigo ">
         <a class="navbar-brand" href="#">Link</a>
     </nav>
@@ -44,6 +44,10 @@
             <div class="col-xl-2 col-lg-3 col-md-3">
                 <aside>
                     <p>salut famille comment allez-vous</p>
+                    <div class="deleteDownload">
+                        <span class="taille"><span></span></span>
+                        <i class="fas fa-download"></i>
+                    </div>
                 </aside>
             </div>
             <div class="col-xl-10 col-lg-9 col-md-9">
@@ -51,7 +55,8 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb indigo lighten-4">
                             <% if(path === "none"){%>
-                            <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a>
+                            <li class="breadcrumb-item"><a class="black-text" href="/shared?key=<%= key %>"><i
+                                        class="fas fa-home"></i></a>
                             </li>
                             &nbsp;&nbsp;&nbsp;<% if(privileges.includes('write')){%>| <li class="breadcrumb-item">
                                 <i class="fas fa-plus add"></i>
@@ -64,7 +69,8 @@
                                 </ul>
                             </li> <%}%>
                             <%}else if(typeof(path) === "string"){%>
-                            <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a>
+                            <li class="breadcrumb-item"><a class="black-text" href="/shared?key=<%= key %>"><i
+                                        class="fas fa-home"></i></a>
                             </li>
                             &nbsp;&nbsp;&nbsp;|
                             <li class="breadcrumb-item active"><a class="black-text" href="#"><%= path %></a><i
@@ -82,7 +88,8 @@
                             </li>
                             <%}%>
                             <%}else{%>
-                            <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a>
+                            <li class="breadcrumb-item"><a class="black-text" href="/shared?key=<%= key %>"><i
+                                        class="fas fa-home"></i></a>
                             </li>
                             &nbsp;&nbsp;&nbsp;|
                             <% path.forEach(el => {%>
@@ -91,7 +98,7 @@
                                     class="fas fa-caret-right mx-2" aria-hidden="true"></i></li>
                             <%}else{%>
                             <li class="breadcrumb-item"><a class="black-text"
-                                    href="/shared/?key=<%= key %>&dir=<%= el %>"><%= el %></a><i
+                                    href="/shared?key=<%= key %>&dir=<%= el %>"><%= el %></a><i
                                     class="fas fa-caret-right mx-2" aria-hidden="true"></i></li>
                             <%}%>
                 <%})%>
@@ -114,7 +121,7 @@
                 </div>
                 <div class="row box_content">
                     <div class="col-lg-12 col-md-12">
-                        <% if privileges.includes('write'){%>
+                        <% if(privileges.includes('write')){%>
                         <div id="ombre">
                             <div id="previews" class="dropzone">
                                 <div id="template">
@@ -190,7 +197,7 @@
                                     <td class="nameOptions">
                                         <div class="left"><img src="/public/images/folder.png" width="50"> <input
                                                 type="checkbox" class="form-check childCheck"><span class="file_name"><a
-                                                    href="/shared/?key=<%= key %>?dir=<%= file.name %>"><%= file.name %></a></span>
+                                                    href="/shared?key=<%= key %>&dir=<%= file.name %>"><%= file.name %></a></span>
                                         </div>
                                     </td>
                                     <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
@@ -275,99 +282,5 @@
       <script src="/mdbootstrap/js/mdb.min.js"></script>
       <script src="/public/javascripts/dropzone.js"></script>
       <script src="/socket.io/socket.io.js"></script>
-      <script>
-        const socket = io();
-        if(JSON.parse($('.privileges')).includes('write')){
-            var previewNode = document.querySelector("#template");
-            var previewTemplate = previewNode.innerHTML;
-            previewNode.parentNode.removeChild(previewNode);
-            Dropzone.autoDiscover = false;
-            const myDropzone = new Dropzone(document.querySelector('#ombre'), {
-            url: "/upload-file",
-            paramName: "file",
-            previewTemplate: previewTemplate,
-            previewsContainer: "#previews",
-            clickable: false,
-            parallelUploads: 2,
-            thumbnailHeight: 120,
-            thumbnailWidth: 120,
-            })
-
-            $('.folders_list').on('dragenter', function () {
-            $('#ombre').fadeIn(500);
-            });
-
-            myDropzone.on('dragleave', function () {
-            $('#ombre').fadeOut(300)
-            });
-
-            myDropzone.on('queuecomplete', function () {
-            myDropzone.removeAllFiles();
-            $('#ombre').fadeOut(300);
-            socket.emit('reload');
-            })
-
-            function submitForm(el) {
-            console.log('yes');
-            const dat = el.children[0].value;
-            $('.new_folder span').toggleClass('text');
-            $('.new_folder span').toggleClass('form');
-            $('.new_folder span.text').html('nouveau dossier');
-            $('.dropDown').fadeOut(300);
-            socket.emit('create_folder', dat);
-            }
-
-            $('.dropDown').on('mouseenter', function () {
-            mouseOverDropDown = true;
-            });
-
-            $('.dropDown').on('mouseleave', function () {
-            mouseOverDropDown = false;
-            })
-
-            $('.add').on('mouseenter', function () {
-            mouseOverDropDown = true;
-            });
-
-            $('.add').on('mouseleave', function () {
-            mouseOverDropDown = false;
-            })
-
-            $('.add').on('click', function (e) {
-            $('.dropDown').fadeToggle(300);
-            })
-
-            let canSupp = true;
-            let mouseOverDropDown = false;
-            /// action to pause, when the create or read folder is set
-            socket.on('success', (data) => {
-                $('.folders_list').html(data);
-            })
-
-            $('.new_folder').on('click', function (e) {
-            e.preventDefault();
-            console.log($('.new_folder span').hasClass('text'));
-            if ($('.new_folder span').hasClass('text')) {
-                console.log('oui merci ooh');
-                $('.new_folder span').toggleClass('text');
-                $('.new_folder span').toggleClass('form');
-                $('.new_folder span.form').html(
-                '<form method="post" action="/" class="form-inline" onSubmit="event.preventDefault();submitForm(this)"><input type="text" id="name_folder" class="form-control mb-2" value="nouveau dossier" autofocus=true onfocus="this.select()"/></form>'
-                );
-            }
-            })
-
-            $(document).on('click', () => {
-            if (!mouseOverDropDown) {
-                if ($('.new_folder span').hasClass('form')) {
-                $('.new_folder span').toggleClass('text');
-                $('.new_folder span').toggleClass('form');
-                $('.new_folder span.text').html('nouveau dossier');
-                }
-                $('.dropDown').fadeOut(300);
-            }
-            });
-    }
-      </script>
-
+      <script src="/public/javascripts/clientSide.js"></script>
 </html>

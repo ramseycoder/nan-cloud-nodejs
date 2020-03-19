@@ -52,7 +52,6 @@ io.on('connection', socket => {
 
     socket.on('reload', async () => {
       const folder = folder_path === '' ? 'root' : folder_path.includes('/') ? folder_path.split('/')[folder_path.split('/').length - 1] : folder_path;
-      console.log('folder', folder);
       const res = await globalQueries.getFolder(folder);
       if (res.etat) {
         const output = await globalQueries.ResultFiles(res.data);
@@ -106,6 +105,47 @@ io.on('connection', socket => {
         socket.emit('shared', res.data);
       }
     })
+
+    socket.on('addgetFileSize', async (data) => {
+      let name = data.includes('.') ? data.slice(0, verifPoint(data)) : data;
+      const res = await globalQueries.getFileSize(name);
+      if (res.etat) {
+        socket.emit('addgetFileSize', res.data);
+      }
+    });
+
+    socket.on('removegetFileSize', async (data) => {
+      let name = data.includes('.') ? data.slice(0, verifPoint(data)) : data;
+      const res = await globalQueries.getFileSize(name);
+      if (res.etat) {
+        socket.emit('removegetFileSize', res.data);
+      }
+    });
+
+    socket.on('deleteFiles', async (data) => {
+      let Files = [];
+      data.forEach(file => {
+        Files.push(file.includes('.') ? {
+          "type": "file",
+          "file": file.slice(0, verifPoint(file))
+        } : {
+          "type": 'folder',
+          "file": file
+        });
+      });
+      const res = await globalQueries.deleteFiles(Files);
+      if (res.etat) {
+        const folder = folder_path === '' ? 'root' : folder_path.includes('/') ? folder_path.split('/')[folder_path.split('/').length - 1] : folder_path;
+        const res = await globalQueries.getFolder(folder);
+        if (res.etat) {
+          const output = await globalQueries.ResultFiles(res.data);
+          if (output.etat) {
+            socket.emit('successDelete', onSucces(output.result));
+          }
+        }
+      }
+    });
+
   } catch (e) {
 
   }
