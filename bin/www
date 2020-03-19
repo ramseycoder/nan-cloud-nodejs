@@ -94,29 +94,15 @@ io.on('connection', socket => {
 
     socket.on('getFileInfo', async (fileid) => {
       const res = await globalQueries.getFileInfo(fileid);
-      if (res.etat && res.type === "file") {
+      if (res.etat) {
         socket.emit('getFileInfo', res.data);
-      } else if (res.etat && res.type === "folder") {
-        console.log('infd', res);
-        const Data = {
-          _id: res.data._id,
-          name: res.data.name,
-          type: res.data.type,
-          shared: res.data.shared,
-          sharedOptions: res.data.sharedOptions,
-          date_creation: res.data.date_creation,
-          size: res.size,
-        }
-        socket.emit('getFileInfo', Data);
       }
     });
 
     socket.on('shared', async (data) => {
       data.crypt_link = rand.generate(8);
-      console.log('datat', data);
       const res = await globalQueries.setSharedFolder(data);
       if (res.etat) {
-        console.log('result', res);
         socket.emit('shared', res.data);
       }
     })

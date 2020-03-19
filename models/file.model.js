@@ -31,10 +31,20 @@ const FileSchema = new Schema({
     },
     sharedOptions: [{
         crypt_link: String,
+        path: String,
         privileges: Array,
-        password: String,
-        expirationDate: Date,
-        message: String
+        password: {
+            type: String,
+            default: null,
+        },
+        expirationDate: {
+            type: Date,
+            default: null,
+        },
+        message: {
+            type: String,
+            default: null,
+        }
     }],
     date_creation: {
         type: Date,

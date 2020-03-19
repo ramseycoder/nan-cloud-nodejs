@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/mdbootstrap/css/all.min.css">
+    <link rel="stylesheet" href="/mdbootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/mdbootstrap/css/mdb.min.css">
+    <link rel="stylesheet" href="/public/stylesheets/all.min.css">
+    <link rel="stylesheet" href="/public/stylesheets/dropzone.css">
+    <link rel="stylesheet" href="/public/stylesheets/style.css">
+    <title>shared</title>
+</head>
+
+<body>
+    <%
+      function verifImage(str){
+        return ['jpg','png','gif','jpeg'].includes(getType(str));
+      }
+
+      function getType(str){
+        return str.slice(verifPoint(str)+1,str.length);
+      }
+
+      function verifPoint(str) {
+        const tab = [];
+        for (let i = 0; i < str.length; i++) {
+          if (str[i] === ".") {
+            tab.push(i);
+          }
+        }
+        return tab[tab.length - 1];
+      }
+    
+  %>
+    <p class="privileges"><%= privileges %></p>
+    <nav class="navbar navbar-dark indigo ">
+        <a class="navbar-brand" href="#">Link</a>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xl-2 col-lg-3 col-md-3">
+                <aside>
+                    <p>salut famille comment allez-vous</p>
+                </aside>
+            </div>
+            <div class="col-xl-10 col-lg-9 col-md-9">
+                <div class="bc-icons-2">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb indigo lighten-4">
+                            <% if(path === "none"){%>
+                            <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a>
+                            </li>
+                            &nbsp;&nbsp;&nbsp;<% if(privileges.includes('write')){%>| <li class="breadcrumb-item">
+                                <i class="fas fa-plus add"></i>
+                                <ul class="dropDown">
+                                    <li>
+                                        <p class="dropdown-item new_folder"><i class="fas fa-folder"></i>
+                                            <span class="text">nouveau dossier</span>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </li> <%}%>
+                            <%}else if(typeof(path) === "string"){%>
+                            <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a>
+                            </li>
+                            &nbsp;&nbsp;&nbsp;|
+                            <li class="breadcrumb-item active"><a class="black-text" href="#"><%= path %></a><i
+                                    class="fas fa-caret-right mx-2" aria-hidden="true"></i></li>
+                            <%if(privileges.includes('write')){%>
+                            <li class="breadcrumb-item">
+                                <i class="fas fa-plus add"></i>
+                                <ul class="dropDown">
+                                    <li>
+                                        <p class="dropdown-item new_folder"><i class="fas fa-folder"></i>
+                                            <span class="text">nouveau dossier</span>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </li>
+                            <%}%>
+                            <%}else{%>
+                            <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a>
+                            </li>
+                            &nbsp;&nbsp;&nbsp;|
+                            <% path.forEach(el => {%>
+                            <% if(path.indexOf(el) === path.length-1){%>
+                            <li class="breadcrumb-item active"><a class="black-text" href="#"><%= el %></a><i
+                                    class="fas fa-caret-right mx-2" aria-hidden="true"></i></li>
+                            <%}else{%>
+                            <li class="breadcrumb-item"><a class="black-text"
+                                    href="/shared/?key=<%= key %>&dir=<%= el %>"><%= el %></a><i
+                                    class="fas fa-caret-right mx-2" aria-hidden="true"></i></li>
+                            <%}%>
+                <%})%>
+                            <% if(privileges.includes('write')){%>
+                            <li class="breadcrumb-item">
+                                <i class="fas fa-plus add"></i>
+                                <ul class="dropDown">
+                                    <li>
+                                        <p class="dropdown-item new_folder"><i class="fas fa-folder"></i>
+                                            <span class="text">nouveau dossier</span>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </li>
+                            <%}%>
+                    
+                    <%}%>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="row box_content">
+                    <div class="col-lg-12 col-md-12">
+                        <% if privileges.includes('write'){%>
+                        <div id="ombre">
+                            <div id="previews" class="dropzone">
+                                <div id="template">
+                                    <DIV class="dz-preview dz-file-preview">
+                                        <DIV class="dz-image"><IMG data-dz-thumbnail=""></DIV>
+                                        <DIV class="dz-details">
+                                            <DIV class="dz-size"><SPAN data-dz-size=""></SPAN></DIV>
+                                            <DIV class="dz-filename"><SPAN data-dz-name=""></SPAN></DIV>
+                                        </DIV>
+                                        <DIV class="dz-progress"><SPAN class="dz-upload"
+                                                data-dz-uploadprogress=""></SPAN></DIV>
+                                        <DIV class="dz-error-message"><SPAN data-dz-errormessage=""></SPAN></DIV>
+                                        <div class="dz-success-mark">
+                                            <svg width="54px" height="54px" viewBox="0 0 54 54" version="1.1"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                                                <title>Check</title>
+                                                <desc>Created with Sketch.</desc>
+                                                <defs></defs>
+                                                <g id="Page-1" stroke="none" stroke-width="1" fill="none"
+                                                    fill-rule="evenodd" sketch:type="MSPage">
+                                                    <path
+                                                        d="M23.5,31.8431458 L17.5852419,25.9283877 C16.0248253,24.3679711 13.4910294,24.366835 11.9289322,25.9289322 C10.3700136,27.4878508 10.3665912,30.0234455 11.9283877,31.5852419 L20.4147581,40.0716123 C20.5133999,40.1702541 20.6159315,40.2626649 20.7218615,40.3488435 C22.2835669,41.8725651 24.794234,41.8626202 26.3461564,40.3106978 L43.3106978,23.3461564 C44.8771021,21.7797521 44.8758057,19.2483887 43.3137085,17.6862915 C41.7547899,16.1273729 39.2176035,16.1255422 37.6538436,17.6893022 L23.5,31.8431458 Z M27,53 C41.3594035,53 53,41.3594035 53,27 C53,12.6405965 41.3594035,1 27,1 C12.6405965,1 1,12.6405965 1,27 C1,41.3594035 12.6405965,53 27,53 Z"
+                                                        id="Oval-2" stroke-opacity="0.198794158" stroke="#747474"
+                                                        fill-opacity="0.816519475" fill="#FFFFFF"
+                                                        sketch:type="MSShapeGroup"></path>
+                                                </g>
+                                            </svg>
+                                        </div>
+                                        <div class="dz-error-mark">
+                                            <svg width="54px" height="54px" viewBox="0 0 54 54" version="1.1"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                                xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                                                <title>error</title>
+                                                <desc>Created with Sketch.</desc>
+                                                <defs></defs>
+                                                <g id="Page-1" stroke="none" stroke-width="1" fill="none"
+                                                    fill-rule="evenodd" sketch:type="MSPage">
+                                                    <g id="Check-+-Oval-2" sketch:type="MSLayerGroup" stroke="#747474"
+                                                        stroke-opacity="0.198794158" fill="#FFFFFF"
+                                                        fill-opacity="0.816519475">
+                                                        <path
+                                                            d="M32.6568542,29 L38.3106978,23.3461564 C39.8771021,21.7797521 39.8758057,19.2483887 38.3137085,17.6862915 C36.7547899,16.1273729 34.2176035,16.1255422 32.6538436,17.6893022 L27,23.3431458 L21.3461564,17.6893022 C19.7823965,16.1255422 17.2452101,16.1273729 15.6862915,17.6862915 C14.1241943,19.2483887 14.1228979,21.7797521 15.6893022,23.3461564 L21.3431458,29 L15.6893022,34.6538436 C14.1228979,36.2202479 14.1241943,38.7516113 15.6862915,40.3137085 C17.2452101,41.8726271 19.7823965,41.8744578 21.3461564,40.3106978 L27,34.6568542 L32.6538436,40.3106978 C34.2176035,41.8744578 36.7547899,41.8726271 38.3137085,40.3137085 C39.8758057,38.7516113 39.8771021,36.2202479 38.3106978,34.6538436 L32.6568542,29 Z M27,53 C41.3594035,53 53,41.3594035 53,27 C53,12.6405965 41.3594035,1 27,1 C12.6405965,1 1,12.6405965 1,27 C1,41.3594035 12.6405965,53 27,53 Z"
+                                                            id="Oval-2" sketch:type="MSShapeGroup"></path>
+                                                    </g>
+                                                </g>
+                                            </svg>
+                                        </div>
+                                    </DIV>
+                                </div>
+                            </div>
+                        </div>
+                        <%}%>
+                        <div class="folders_list">
+                            <% if(files.length === 0){%>
+                        <p>le dossier est vide</p>
+                        <%}else{%>
+                        <table>
+                            <thead>
+                                <th class="name"><input style="display: inline-block" type="checkbox"
+                                        class="form-check globalCheck">&nbsp;&nbsp;&nbsp;&nbsp;<span
+                                        style="display:inline-block">name</span>
+                                </th>
+                                <th class="size">size</th>
+                                <th class="modified">modified</th>
+                            </thead>
+                            <tbody>
+                                <% files.forEach(file => { %>
+                                <tr>
+                                    <% if(getType(file.name) === file.name){%>
+                                    <td class="nameOptions">
+                                        <div class="left"><img src="/public/images/folder.png" width="50"> <input
+                                                type="checkbox" class="form-check childCheck"><span class="file_name"><a
+                                                    href="/shared/?key=<%= key %>?dir=<%= file.name %>"><%= file.name %></a></span>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= file.date_creation %></td>
+                                    <%} else if(verifImage(file.name)){%>
+                                    <td class="nameOptions">
+                                        <div class="left"><img src="/public/images/pictures.png" width="50"></i>
+                                            <input type="checkbox" class="form-check childCheck"><span
+                                                class="file_name"><%= file.name %></span></div>
+
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= file.date_creation %></td>
+                                    <%}else if(getType(file.name) === "mp4"){%>
+                                    <td class="nameOptions">
+                                        <div class="left"><img src="/public/images/video-player.png" width="50"></i>
+                                            <input type="checkbox" class="form-check childCheck"><span
+                                                class="file_name"><%= file.name %></span>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= file.date_creation %></td>
+                                    <%}else if(getType(file.name) === "pdf"){%>
+                                    <td class="nameOptions">
+                                        <div class="left"><img src="/public/images/pdf.png" width="50"></i> <input
+                                                type="checkbox" class="form-check childCheck"><span
+                                                class="file_name"><%= file.name %></span>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= file.date_creation %></td>
+                                    <%}else if(getType(file.name) === "txt"){%>
+                                    <td class="nameOptions">
+                                        <div class="left"><img src="/public/images/txt.png" width="50"></i> <input
+                                                type="checkbox" class="form-check childCheck"><span
+                                                class="file_name"><%= file.name %></span>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= file.date_creation %></td>
+                                    <%}else if(getType(file.name) === "mp3"){ %>
+                                    <td class="nameOptions">
+                                        <div class="left"><i class="fas fa-audio-description"></i> <input
+                                                type="checkbox" class="form-check childCheck"><span
+                                                class="file_name"><%= file.name %></span>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= file.date_creation %></td>
+                                    <%}else{%>
+                                    <td class="nameOptions">
+                                        <div class="left"><i class="fas fa-file"></i> <input type="checkbox"
+                                                class="form-check childCheck"><span
+                                                class="file_name"><%= file.name %></span></div>
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= file.date_creation %></td>
+                                    <%}%>
+                      </tr>
+                      <% }) %>
+                            </tbody>
+                        </table>
+                        <%}%>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- fin de temps -->
+      <script src="/mdbootstrap/js/jquery.min.js"></script>
+      <script src="/mdbootstrap/js/popper.js"></script>
+      <script src="/mdbootstrap/js/bootstrap.min.js"></script>
+      <script src="/mdbootstrap/js/mdb.min.js"></script>
+      <script src="/public/javascripts/dropzone.js"></script>
+      <script src="/socket.io/socket.io.js"></script>
+      <script>
+        const socket = io();
+        if(JSON.parse($('.privileges')).includes('write')){
+            var previewNode = document.querySelector("#template");
+            var previewTemplate = previewNode.innerHTML;
+            previewNode.parentNode.removeChild(previewNode);
+            Dropzone.autoDiscover = false;
+            const myDropzone = new Dropzone(document.querySelector('#ombre'), {
+            url: "/upload-file",
+            paramName: "file",
+            previewTemplate: previewTemplate,
+            previewsContainer: "#previews",
+            clickable: false,
+            parallelUploads: 2,
+            thumbnailHeight: 120,
+            thumbnailWidth: 120,
+            })
+
+            $('.folders_list').on('dragenter', function () {
+            $('#ombre').fadeIn(500);
+            });
+
+            myDropzone.on('dragleave', function () {
+            $('#ombre').fadeOut(300)
+            });
+
+            myDropzone.on('queuecomplete', function () {
+            myDropzone.removeAllFiles();
+            $('#ombre').fadeOut(300);
+            socket.emit('reload');
+            })
+
+            function submitForm(el) {
+            console.log('yes');
+            const dat = el.children[0].value;
+            $('.new_folder span').toggleClass('text');
+            $('.new_folder span').toggleClass('form');
+            $('.new_folder span.text').html('nouveau dossier');
+            $('.dropDown').fadeOut(300);
+            socket.emit('create_folder', dat);
+            }
+
+            $('.dropDown').on('mouseenter', function () {
+            mouseOverDropDown = true;
+            });
+
+            $('.dropDown').on('mouseleave', function () {
+            mouseOverDropDown = false;
+            })
+
+            $('.add').on('mouseenter', function () {
+            mouseOverDropDown = true;
+            });
+
+            $('.add').on('mouseleave', function () {
+            mouseOverDropDown = false;
+            })
+
+            $('.add').on('click', function (e) {
+            $('.dropDown').fadeToggle(300);
+            })
+
+            let canSupp = true;
+            let mouseOverDropDown = false;
+            /// action to pause, when the create or read folder is set
+            socket.on('success', (data) => {
+                $('.folders_list').html(data);
+            })
+
+            $('.new_folder').on('click', function (e) {
+            e.preventDefault();
+            console.log($('.new_folder span').hasClass('text'));
+            if ($('.new_folder span').hasClass('text')) {
+                console.log('oui merci ooh');
+                $('.new_folder span').toggleClass('text');
+                $('.new_folder span').toggleClass('form');
+                $('.new_folder span.form').html(
+                '<form method="post" action="/" class="form-inline" onSubmit="event.preventDefault();submitForm(this)"><input type="text" id="name_folder" class="form-control mb-2" value="nouveau dossier" autofocus=true onfocus="this.select()"/></form>'
+                );
+            }
+            })
+
+            $(document).on('click', () => {
+            if (!mouseOverDropDown) {
+                if ($('.new_folder span').hasClass('form')) {
+                $('.new_folder span').toggleClass('text');
+                $('.new_folder span').toggleClass('form');
+                $('.new_folder span.text').html('nouveau dossier');
+                }
+                $('.dropDown').fadeOut(300);
+            }
+            });
+    }
+      </script>
+
+</html>

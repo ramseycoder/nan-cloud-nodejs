@@ -32,11 +32,17 @@ exports.globalQueries = class {
             }).then(async r => {
                 await File.findOne({
                     folder_id: r._id
-                }).then(s => {
-                    console.log('sss', s);
+                }).then(async s => {
                     if (s !== null) {
                         s.size = r.size;
                         s.save();
+                        await Folder.find().then(data => {
+                            data.forEach(async el => {
+                                if (el.files.includes(s._id)) {
+                                    await this.updateFolderSize(el._id, s.size);
+                                }
+                            })
+                        })
                     }
                 });
                 next({
@@ -251,11 +257,20 @@ exports.globalQueries = class {
             const file = await File.findById(data.id_file).then(r => r);
             file.shared = true;
             if (file.type === "folder") {
+                file.sharedOptions.push({
+                    crypt_link: data.crypt_link,
+                    path: folder_path + `/${file.name}`,
+                    privileges: data.privilege,
+                    password: data.password,
+                    expirationDate: data.date,
+                    message: data.message
+                });
                 file.save();
                 const folder = await Folder.findById(file.folder_id).then(r => r);
                 folder.shared = true,
                     folder.sharedOptions.push({
                         crypt_link: data.crypt_link,
+                        path: folder_path + `/${folder.name}`,
                         privileges: data.privilege,
                         password: data.password,
                         expirationDate: data.date,
@@ -275,6 +290,7 @@ exports.globalQueries = class {
             } else {
                 file.sharedOptions.push({
                     crypt_link: data.crypt_link,
+                    path: folder_path + `/${file.name}.${file.mimetype}`,
                     privileges: data.privilege,
                     password: data.password,
                     expirationDate: data.date,
@@ -298,21 +314,10 @@ exports.globalQueries = class {
     static getFileInfo(id) {
         return new Promise(async next => {
             await File.findById(id).then(async r => {
-                if (r.type === "file") {
-                    next({
-                        etat: true,
-                        type: "file",
-                        data: r
-                    });
-                } else {
-                    next({
-                        etat: true,
-                        type: "folder",
-                        data: r,
-                        size: r.size + await getAllFolderSize(r.name).then(r => r)
-                    })
-                }
-
+                next({
+                    etat: true,
+                    data: r
+                });
             }).catch(err => {
                 next({
                     etat: false,
@@ -324,63 +329,96 @@ exports.globalQueries = class {
 
     static ResultFiles(data) {
         return new Promise(async next => {
-            const output = [];
-            if (data.files.length == 0) {
+            if (data.files.length === 0) {
                 next({
                     etat: true,
-                    result: output
+                    result: []
                 });
             } else {
-                data.files.forEach(async (file, index) => {
-                    console.log('file', file);
-                    let r = file.type === 'file' ? file.size : 20;
-                    if (file.type === "file" && file.mimetype !== "mp4") {
-                        fs.writeFileSync(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, function (err) {
-                            if (err) throw err;
-                            console.log('writing file succesfuly');
-                        })
-                    }
-                    const obj = {};
+                let output = [];
+                data.files.forEach((file, index) => {
                     if (file.type === "file") {
-                        obj._id = file._id;
-                        obj.name = file.name + '.' + file.mimetype;
-                        obj.size = r;
-                        obj.shared = file.shared;
-                        obj.sharedOptions = file.sharedOptions;
-                        obj.date = file.date_creation;
-                    } else {
-                        obj._id = file._id;
-                        obj.name = file.name;
-                        obj.size = file.size + r;
-                        obj.shared = file.shared;
-                        obj.sharedOptions = file.sharedOptions;
-                        obj.date = file.date_creation;
-                        obj.folder_id = file.folder_id;
+                        fs.writeFile(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, (err, dat) => {
+                            if (err) throw err
+                        });
                     }
+                    let obj = {
+                        _id: file.id,
+                        name: file.type == "file" ? file.name + '.' + file.mimetype : file.name,
+                        type: file.type,
+                        shared: file.shared,
+                        sharedOptions: file.sharedOptions,
+                        size: file.size,
+                        date_creation: file.date_creation
+                    }
+                    console.log('size', obj.size);
                     output.push(obj);
                     if (index === data.files.length - 1) {
                         next({
                             etat: true,
                             result: output
-                        });
+                        })
                     }
                 });
             }
         })
     }
-}
+
+    static updateFolderSize(id, size) {
+        return new Promise(async next => {
+            await Folder.findById(id).then(async r => {
+                r.size += size;
+                r.save();
+                await File.findOne({
+                    folder_id: r._id
+                }).then(s => {
+                    s.size = r.size;
+                    s.save();
+                })
+            })
+        });
+    }
 
 
-async function getAllFolderSize(data) {
-    let size = 0;
-    await Folder.findOne({
-        name: data
-    }).populate('files').then(s => {
-        s.files.forEach(file => {
-            if (file.type === "folder") {
-                size += file.size
-            }
-        })
-    });
-    return size;
+    static getAllSharedFiles() {
+        return new Promise(async next => {
+            let BigObject = {};
+            await File.find({
+                shared: true
+            }).then(big => {
+                big.forEach((bigEl, index) => {
+                    bigEl.sharedOptions.forEach(shared => {
+                        BigObject[shared.crypt_link] = shared;
+                    })
+                    if (index === big.length - 1) {
+                        next({
+                            etat: true,
+                            result: BigObject
+                        });
+                    }
+                })
+            });
+        });
+    }
+
+    static getOneFolder(parent, child) {
+        console.log('parent', parent);
+        console.log('child', child);
+        return new Promise(async next => {
+            let Files = [];
+            await Folder.findOne({
+                name: parent
+            }).populate('files').then(r => {
+                r.files.forEach(file => {
+                    if (file.name === child) {
+                        Files.push(file);
+                        next({
+                            etat: true,
+                            files: Files
+                        });
+                    }
+                })
+            })
+        });
+    }
 }

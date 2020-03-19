@@ -304,3 +304,33 @@ table tbody tr td.nameOptions .right {
     position: relative;
     top: -20px;
 }
+
+
+#sharedLogin {
+    padding-top: 5%;
+    background: rgb(24, 89, 173);
+    text-align: center;
+}
+
+#sharedLogin section figure {
+    color: white;
+    font-size: 60px;
+}
+
+#sharedLogin section figure figcaption span {
+    font-weight: bolder;
+    font-family: 'arial black';
+}
+
+#sharedLogin section form {
+    text-align: center;
+    width: 300px;
+    margin: 0 auto;
+    margin-top: 30px;
+}
+
+#sharedLogin section form label {
+    color: white;
+    float: left;
+    font-weight: bolder;
+}

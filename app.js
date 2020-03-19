@@ -8,7 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 global.folder_path = "";
 global.currentFolderId = "";
-global.Folder = "";
+global.sharedObject = {};
 var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
