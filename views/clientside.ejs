@@ -35,25 +35,29 @@
       }
     
   %>
+    <div class="deleteDownload">
+        <span class="taille"><span></span></span>
+        <i class="fas fa-download"></i>
+    </div>
     <p class="privileges" style="display:none"><%= privileges %></p>
     <nav class="navbar navbar-dark indigo ">
-        <a class="navbar-brand" href="#">Link</a>
+        <a class="navbar-brand" href="#">
+            <div><i class="fas fa-cloud"></i>
+                <p><span>NaN</span> Cloud</p>
+            </div>
+        </a>
     </nav>
     <div class="container-fluid">
         <div class="row">
             <div class="col-xl-2 col-lg-3 col-md-3">
                 <aside>
                     <p>salut famille comment allez-vous</p>
-                    <div class="deleteDownload">
-                        <span class="taille"><span></span></span>
-                        <i class="fas fa-download"></i>
-                    </div>
                 </aside>
             </div>
             <div class="col-xl-10 col-lg-9 col-md-9">
                 <div class="bc-icons-2">
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb indigo lighten-4">
+                        <ol class="breadcrumb lighten-4">
                             <% if(path === "none"){%>
                             <li class="breadcrumb-item"><a class="black-text" href="/shared?key=<%= key %>"><i
                                         class="fas fa-home"></i></a>
@@ -282,5 +286,6 @@
       <script src="/mdbootstrap/js/mdb.min.js"></script>
       <script src="/public/javascripts/dropzone.js"></script>
       <script src="/socket.io/socket.io.js"></script>
+      <script src="/public/javascripts/fonctions.js"></script>
       <script src="/public/javascripts/clientSide.js"></script>
 </html>

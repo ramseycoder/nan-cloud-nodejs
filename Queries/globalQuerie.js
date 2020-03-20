@@ -1,10 +1,28 @@
 const File = require('../models/file.model');
 const Folder = require('../models/folder.model');
-const base64 = require('file-base64');
+const Admin = require('../models/admin.model');
 const path = require('path');
 const Dir = path.join(__dirname, '../BigData');
 const fs = require('fs');
 exports.globalQueries = class {
+    static getAdmin(data) {
+        return new Promise(async next => {
+            await Admin.findOne({
+                name: data.name,
+                password: data.password
+            }).then(r => {
+                next({
+                    etat: true,
+                    data: r
+                });
+            }).catch(err => {
+                next({
+                    etat: false,
+                    message: err
+                });
+            })
+        })
+    }
     static setFile(data) {
         return new Promise(async next => {
             let folder;
@@ -311,6 +329,40 @@ exports.globalQueries = class {
         });
     }
 
+    static updateShared(data) {
+        return new Promise(async next => {
+            await File.findById(data.id_file).then(async s => {
+                if (s.type === "folder") {
+                    await Folder.findById(s.folder_id).then(e => {
+                        e.sharedOptions.forEach((f, index) => {
+                            if (f.crypt_link === data.crypt_link) {
+                                e.sharedOptions[index].password = data.password;
+                                e.sharedOptions[index].privileges = data.privilege;
+                                e.sharedOptions[index].expirationDate = data.date;
+                                e.sharedOptions[index].message = data.message;
+                                e.save();
+                            }
+                        })
+                    });
+                }
+                s.sharedOptions.forEach((f, index) => {
+                    if (f.crypt_link === data.crypt_link) {
+                        s.sharedOptions[index].password = data.password;
+                        s.sharedOptions[parseInt(index)].privileges = data.privilege;
+                        s.sharedOptions[parseInt(index)].expirationDate = data.date;
+                        s.sharedOptions[parseInt(index)].message = data.message;
+                        s.save().then(e => {
+                            next({
+                                etat: true,
+                                data: s
+                            });
+                        })
+                    }
+                })
+            });
+        });
+    }
+
     static getFileInfo(id) {
         return new Promise(async next => {
             await File.findById(id).then(async r => {
@@ -337,7 +389,7 @@ exports.globalQueries = class {
             } else {
                 let output = [];
                 data.files.forEach((file, index) => {
-                    if (file.type === "file") {
+                    if (file.type === "file" && file.mimetype !== "mp4") {
                         fs.writeFile(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, (err, dat) => {
                             if (err) throw err
                         });
@@ -351,7 +403,6 @@ exports.globalQueries = class {
                         size: file.size,
                         date_creation: file.date_creation
                     }
-                    console.log('size', obj.size);
                     output.push(obj);
                     if (index === data.files.length - 1) {
                         next({
@@ -477,5 +528,50 @@ exports.globalQueries = class {
                 }
             })
         });
+    }
+
+
+    static deleteShared(data) {
+        return new Promise(async next => {
+            await File.findById(data.file_id).then(async r => {
+                if (r.type == "folder") {
+                    await Folder.findById(r.folder_id).then(e => {
+                        e.sharedOptions.forEach((shared, index) => {
+                            if (shared.crypt_link === data.crypt_link) {
+                                e.sharedOptions = e.sharedOptions.slice(0, index).concat(e.sharedOptions.slice(index + 1, e.sharedOptions.length));
+                                e.save().then(d => {
+                                    if (d.sharedOptions.length == 0) {
+                                        d.shared = false;
+                                        d.save();
+                                    }
+                                });
+                            }
+                        });
+                    })
+                }
+                r.sharedOptions.forEach((shared, index) => {
+                    if (shared.crypt_link === data.crypt_link) {
+                        r.sharedOptions = r.sharedOptions.slice(0, index).concat(r.sharedOptions.slice(index + 1, r.sharedOptions.length));
+                        r.save().then(s => {
+                            if (s.sharedOptions.length == 0) {
+                                s.shared = false;
+                                s.save().then(d => {
+                                    next({
+                                        etat: true,
+                                        data: d
+                                    });
+                                })
+                            } else {
+                                next({
+                                    etat: true,
+                                    data: s
+                                });
+                            }
+
+                        })
+                    }
+                })
+            })
+        })
     }
 }

@@ -1,5 +1,5 @@
 const socket = io();
-let s = $('.privileges').text().includes(',') ? $('.privileges').text().split(',') : $('.privileges').text();
+let s = $('.privileges').text().includes(',') ? $('.privileges').text().split(',') : [$('.privileges').text()];
 if (s.includes('write')) {
     var previewNode = document.querySelector("#template");
     var previewTemplate = previewNode.innerHTML;
@@ -93,10 +93,16 @@ socket.on('success', (data) => {
 })
 
 socket.on('addgetFileSize', (data) => {
-    $('.deleteDownload').css('display', 'block');
     let t = $('.deleteDownload .taille span').text();
     let taille = t === '' ? 0 : parseFloat(t).toFixed(2);
+    console.log('rmkjqdfj', taille);
+    if (taille === 0 || taille === "0.00") {
+        $('.deleteDownload').animate({
+            "right": "0%"
+        }, 500);
+    }
     $('.deleteDownload .taille').html('');
+
     taille = parseFloat(taille) + parseFloat(((data / 1000) / 1000).toFixed(2));
     $('.deleteDownload .taille').html(`<span>${taille.toFixed(2)}</span> Mo`);
 });
@@ -108,7 +114,9 @@ socket.on('removegetFileSize', (data) => {
     taille = parseFloat(taille) - parseFloat(((data / 1000) / 1000).toFixed(2));
     $('.deleteDownload .taille').html(`<span>${taille.toFixed(2)}</span> Mo`);
     if (taille === 0.00) {
-        $('.deleteDownload').css('display', 'none');
+        $('.deleteDownload').animate({
+            "right": "-20%"
+        }, 500);
     }
 });
 
@@ -134,6 +142,9 @@ $('.globalCheck').on('change', function () {
 });
 
 
+$('table tbody tr').each(function (index) {
+    this.children[2].textContent = getRightFormatDate(this.children[2].textContent);
+})
 
 $('.childCheck').each(function () {
     $(this).on('change', function () {
@@ -141,12 +152,8 @@ $('.childCheck').each(function () {
             $(this).parents('tr').css('background-color', 'rgb(203, 203, 203)');
             $(this).css('display', 'block');
             if (this.nextElementSibling.children[0] === undefined) {
-                console.log('oui')
-                console.log(this.nextElementSibling.textContent)
                 socket.emit('addgetFileSize', this.nextElementSibling.textContent)
             } else {
-                console.log('onn');
-                console.log(this.nextElementSibling.children[0].textContent)
                 socket.emit('addgetFileSize', this.nextElementSibling.children[0].textContent)
             };
 
@@ -163,3 +170,20 @@ $('.childCheck').each(function () {
 $('tr').on('mouseleave', function () {
     this.children[0].children[0].style.display = "none !important";
 })
+
+function getRightFormatDate(date) {
+    let secondes = (new Date().getTime() / 1000) - (new Date(date).getTime() / 1000);
+    let sate = new Date(date);
+    if (secondes > 604800) {
+        return getDay(sate.getDay()) + ' ' + sate.getDate() + ' ' + getMonth(sate.getMonth()) + ' ' + sate.getFullYear();
+    } else if (secondes > 86400) {
+        return `il y a ${parseInt(secondes/86400)} jours`;
+    } else if (secondes > 3600) {
+        return `il y a ${parseInt(secondes/3600)} heures`;
+    } else if (secondes > 60) {
+        return `il y a ${parseInt(secondes/60)} minutes`;
+    } else {
+        return `maintenant`;
+    }
+
+}

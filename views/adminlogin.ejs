@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/mdbootstrap/css/all.min.css">
+    <link rel="stylesheet" href="/mdbootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/mdbootstrap/css/mdb.min.css">
+    <link rel="stylesheet" href="/public/stylesheets/all.min.css">
+    <link rel="stylesheet" href="/public/stylesheets/dropzone.css">
+    <link rel="stylesheet" href="/public/stylesheets/style.css">
+    <title>shared</title>
+</head>
+
+<body class="container" id="sharedLogin">
+    <section>
+        <figure>
+            <i class="fas fa-cloud"></i>
+            <figcaption><span>NaN</span>Cloud / <p>Administration</p>
+            </figcaption>
+        </figure>
+        <br>
+
+        <% if(errorLogin){%>
+        <div class="alert alert-danger">
+            <p>username ou mot de passe incorrect</p>
+        </div>
+        <%}%>
+        <br>
+        <form method="post" action="/admin/cloud">
+        <div class="form-group">
+            <label for="username">username</label>
+            <input type="text"  class="form-control mb-4" id="username" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="password">password</label>
+            <input type="password"  id="password" class="form-control mb-4" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-success btn-md">connexion</button>
+        </form>
+    </section>
+    <script src="/mdbootstrap/js/jquery.min.js"></script>
+    <script src="/mdbootstrap/js/popper.js"></script>
+    <script src="/mdbootstrap/js/bootstrap.min.js"></script>
+    <script src="/mdbootstrap/js/mdb.min.js"></script>
+</body>
+
+</html>

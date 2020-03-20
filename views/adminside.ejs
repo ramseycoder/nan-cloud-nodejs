@@ -34,25 +34,41 @@
       }
     
   %>
+  <div class="deleteDownload">
+    <span class="taille"><span></span></span>
+    <i class="fas fa-download"></i>
+    <i class="fas fa-trash suppress"></i>
+  </div>
   <nav class="navbar navbar-dark indigo ">
-    <a class="navbar-brand" href="#">Link</a>
+    <a class="navbar-brand" href="#">
+      <div><i class="fas fa-cloud"></i>
+        <p><span>NaN</span> Cloud</p>
+      </div>
+    </a>
+    <ul>
+      <li>
+        <div class="admin">
+          <i class="fas fa-user"></i>
+          <p><%= admin.name %></p>
+        </div>
+      </li>
+    </ul>
   </nav>
   <div class="container-fluid">
     <div class="row">
-      <div class="col-xl-2 col-lg-3 col-md-3">
+      <div class="col-xl-2 col-lg-2 col-md-3">
         <aside>
-          <p>salut famille comment allez-vous</p>
-          <div class="deleteDownload">
-            <span class="taille"><span></span></span>
-            <i class="fas fa-download"></i>
-            <i class="fas fa-trash suppress"></i>
-          </div>
+          <ul>
+            <li class="active"><i class="fas fa-file"></i> &nbsp;<span> Tous les fichiers</span></li>
+            <li><i class="fas fa-star"></i> &nbsp; <span> fichiers favoris</span></li>
+            <li><i class="fas fa-share-alt"></i> &nbsp; <span> fichiers partagés</span></li>
+          </ul>
         </aside>
       </div>
-      <div class="col-xl-10 col-lg-9 col-md-9">
+      <div class="col-xl-10 col-lg-10 col-md-9">
         <div class="bc-icons-2">
           <nav aria-label="breadcrumb">
-            <ol class="breadcrumb indigo lighten-4">
+            <ol class="breadcrumb">
               <% if(path === "none"){%>
               <li class="breadcrumb-item"><a class="black-text" href="/"><i class="fas fa-home"></i></a></li>
               &nbsp;&nbsp;&nbsp;| <li class="breadcrumb-item">
@@ -317,7 +333,7 @@
             <p>
               <strong></strong>
             </p>
-            <p>partager vos données avec d'autres personnes
+            <p class="text">partager vos données avec d'autres personnes
               <strong>veuillez remplir les champs suivants</strong>
             </p>
           </div>
@@ -330,13 +346,14 @@
           </p>
 
           <input type="hidden" id="id_file">
+          <input type="hidden" id="id_cryptlink">
           <div class="form-check mb-4">
-            <input class="form-check-input" name="group1" type="radio" id="d" value="download" checked>
+            <input class="form-check-input" name="group1" type="radio" id="d" value="download">
             <label class="form-check-label" for="d"> les utilisateurs  auront le droit uniquement que de télécharger l'élément partager</label>
           </div>
 
           <div class="form-check mb-4">
-            <input class="form-check-input" name="group1" type="radio" id="rw" value="read&download" checked>
+            <input class="form-check-input" name="group1" type="radio" id="rd" value="read&download">
             <label class="form-check-label" for="rw"> les utilisateurs  auront le droit de lire et de télécharger l'élément partager</label>
           </div>
   
@@ -370,7 +387,10 @@
   
         <!--Footer-->
         <div class="modal-footer justify-content-center">
-          <a type="button" onclick="getShareConfig()" class="btn btn-primary waves-effect waves-light"> enoyer
+          <a type="button" onclick="getShareConfig()" class="btn btn-primary waves-effect waves-light"> envoyer
+            <i class="fa fa-paper-plane ml-1"></i>
+          </a>
+          <a type="button" onclick="getUpdateShared()" style="display: none" class="btn btn-default waves-effect waves-light"> envoyer
             <i class="fa fa-paper-plane ml-1"></i>
           </a>
           <a type="button" class="btn btn-outline-primary waves-effect" data-dismiss="modal">fermer</a>

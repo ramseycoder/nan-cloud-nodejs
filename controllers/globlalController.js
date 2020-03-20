@@ -4,43 +4,73 @@ const random = require('random-key');
 const {
     globalQueries
 } = require('../Queries/globalQuerie');
-const g = require('gridfs-stream');
 
 
 exports.index = async (req, res) => {
-    const Id = await globalQueries.getFolderId('root');
-    if (Id.etat) {
-        res.redirect(`app/files/?dir=/&fileid=${Id.data}`);
+    if (req.session.admin) {
+        const Id = await globalQueries.getFolderId('root');
+        if (Id.etat) {
+            res.redirect(`app/files/?dir=/&fileid=${Id.data}`);
+        }
+    } else {
+        res.redirect('admin/cloud')
+    }
+}
+
+exports.adminLogin = async (req, res) => {
+    res.render('adminLogin', {
+        errorLogin: false
+    });
+}
+
+exports.adminLoginPost = async (req, res) => {
+    const resuOne = await globalQueries.getAdmin(req.body);
+    if (resuOne.etat && resuOne.data !== null) {
+        req.session.admin = {
+            id: resuOne.data._id,
+            name: resuOne.data.name
+        };
+        req.session.save();
+        res.redirect('/');
+    } else {
+        res.render('adminLogin', {
+            errorLogin: true
+        });
     }
 }
 
 exports.appFiles = async (req, res) => {
-    const Dir = req.query.dir;
-    const id = req.query.fileid;
-    if (id === undefined) {
-        //const Id = await globalQueries.getFolderId(Dir);
-        folder_path = setPath(folder_path, Dir);
-        const Id = await globalQueries.getUnderFolderId(folder_path);
-        if (Id.etat) {
-            res.redirect(`/app/files/?dir=/${folder_path}&fileid=${Id.data}`);
+    if (req.session.admin) {
+        const Dir = req.query.dir;
+        const id = req.query.fileid;
+        if (id === undefined) {
+            //const Id = await globalQueries.getFolderId(Dir);
+            folder_path = setPath(folder_path, Dir);
+            const Id = await globalQueries.getUnderFolderId(folder_path);
+            if (Id.etat) {
+                res.redirect(`/app/files/?dir=/${folder_path}&fileid=${Id.data}`);
+            }
+        } else {
+            folder_path = Dir === '/' ? '' : folder_path;
+            let path = Dir === '/' ? 'none' : folder_path.includes('/') ? folder_path.split('/') : folder_path;
+            currentFolderId = id;
+            const resOne = await globalQueries.getFolderById(id);
+            if (resOne.etat) {
+                const layout = await globalQueries.ResultFiles(resOne.data);
+                if (layout.etat) {
+                    res.render('adminside', {
+                        path: path,
+                        files: layout.result,
+                        admin: req.session.admin
+                    });
+                }
+                /* const output = await globalQueries.ResultFiles(resOne.data); */
+
+                // console.log('path', path);
+            }
         }
     } else {
-        folder_path = Dir === '/' ? '' : folder_path;
-        let path = Dir === '/' ? 'none' : folder_path.includes('/') ? folder_path.split('/') : folder_path;
-        currentFolderId = id;
-        const resOne = await globalQueries.getFolderById(id);
-        if (resOne.etat) {
-            const layout = await globalQueries.ResultFiles(resOne.data);
-            if (layout.etat) {
-                res.render('adminside', {
-                    path: path,
-                    files: layout.result
-                });
-            }
-            /* const output = await globalQueries.ResultFiles(resOne.data); */
-
-            // console.log('path', path);
-        }
+        res.redirect('/');
     }
 }
 
@@ -98,7 +128,6 @@ exports.shared1 = async (req, res) => {
     if (req.session.shared) {
         res.redirect(`/shared?key=${req.session.shared.keyShared}`)
     } else {
-        console.log('params', req.params.key);
         let SO = await globalQueries.getAllSharedFiles();
         if (SO.etat) {
             sharedObject = SO.result;
@@ -114,17 +143,17 @@ exports.shared1 = async (req, res) => {
                                 errorLogin: false
                             });
                         } else {
-                            req.session.shared = {
-                                key: random.generate(16),
-                                keyShared: obj.crypt_link,
-                                path: ''
-                            };
-                            req.session.save();
                             let t = obj.path.split('/');
                             let filename = t[t.length - 1];
                             if (filename.includes('.')) {
-                                res.redirect(`/BigData/${filename}`);
+                                res.redirect(`/STORAGE/${filename}`);
                             } else {
+                                req.session.shared = {
+                                    key: random.generate(16),
+                                    keyShared: obj.crypt_link,
+                                    path: ''
+                                };
+                                req.session.save();
                                 let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
                                 let q = await globalQueries.getOneFolder(parent, filename);
                                 if (q.etat) {
@@ -138,26 +167,23 @@ exports.shared1 = async (req, res) => {
                             }
                         }
                     } else {
-                        res.json({
-                            status: false,
-                            message: "link expired"
-                        })
+                        res.render('link_expired')
                     }
                 } else {
                     if (obj.password !== null && obj.password !== '') {
                         res.render('loginShared');
                     } else {
-                        req.session.shared = {
-                            key: random.generate(16),
-                            keyShared: obj.crypt_link,
-                            path: ''
-                        };
-                        req.session.save();
                         let t = obj.path.split('/');
                         let filename = t[t.length - 1];
                         if (filename.includes('.')) {
-                            res.redirect(`/BigData/${filename}`);
+                            res.redirect(`/STORAGE/${filename}`);
                         } else {
+                            req.session.shared = {
+                                key: random.generate(16),
+                                keyShared: obj.crypt_link,
+                                path: ''
+                            };
+                            req.session.save();
                             let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
                             let q = await globalQueries.getOneFolder(parent, filename);
                             if (q.etat) {
@@ -172,105 +198,107 @@ exports.shared1 = async (req, res) => {
                     }
                 }
             } else {
-                res.json({
-                    status: false,
-                    message: 'no files found under this link'
-                });
+                res.status(404).render('error');
             }
         }
     }
 }
 
 exports.shared1Post = async (req, res) => {
-    if (Object.keys(sharedObject).includes(req.body.key)) {
-        let obj = sharedObject[req.body.key];
-        if (req.body.username === "nancloud" && req.body.password === obj.password) {
-            req.session.shared = {
-                key: random.generate(16),
-                keyShared: obj.crypt_link,
-                path: ''
-            };
-            req.session.save();
-            let t = obj.path.split('/');
-            let filename = t[t.length - 1];
-            if (filename.includes('.')) {
-                res.redirect(`/BigData/${filename}`);
-            } else {
-                let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
-                let q = await globalQueries.getOneFolder(parent, filename);
-                if (q.etat) {
-                    res.render('clientside', {
-                        path: 'none',
-                        key: obj.crypt_link,
-                        privileges: obj.privileges,
-                        files: q.files
-                    })
-                }
-            }
-        } else {
-            res.render('loginShared', {
-                key: req.body.key,
-                errorLogin: true,
-            });
-        }
-    } else {
-        res.json({
-            status: false,
-            message: "bad request"
-        });
-    }
-}
-
-
-exports.shared2 = async (req, res) => {
-    if (req.session.shared) {
-        let Key = req.query.key;
-        let folder = req.query.dir;
-        if (Object.keys(sharedObject).includes(Key)) {
-            let obj = sharedObject[Key];
-            if (folder !== undefined) {
-                req.session.shared.path = setPath(req.session.shared.path, folder);
-                let resuOne = await globalQueries.getFolder(folder);
-                if (resuOne.etat) {
-                    let layout = await globalQueries.ResultFiles(resuOne.data);
-                    if (layout.etat) {
+    let SO = await globalQueries.getAllSharedFiles();
+    if (SO.etat) {
+        sharedObject = SO.result;
+        if (Object.keys(sharedObject).includes(req.body.key)) {
+            let obj = sharedObject[req.body.key];
+            if (req.body.username === "nancloud" && req.body.password === obj.password) {
+                let t = obj.path.split('/');
+                let filename = t[t.length - 1];
+                if (filename.includes('.')) {
+                    res.redirect(`/STORAGE/${filename}`);
+                } else {
+                    req.session.shared = {
+                        key: random.generate(16),
+                        keyShared: obj.crypt_link,
+                        path: ''
+                    };
+                    req.session.save();
+                    let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
+                    let q = await globalQueries.getOneFolder(parent, filename);
+                    if (q.etat) {
                         res.render('clientside', {
-                            path: req.session.shared.path.includes('/') ? req.session.shared.path.split('/') : req.session.shared.path,
+                            path: 'none',
+                            key: obj.crypt_link,
                             privileges: obj.privileges,
-                            key: Key,
-                            files: layout.result,
+                            files: q.files
                         })
                     }
                 }
             } else {
-                req.session.shared.path = '';
-                let t = obj.path.split('/');
-                let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
-                let q = await globalQueries.getOneFolder(parent, t[t.length - 1]);
-                if (q.etat) {
-                    res.render('clientside', {
-                        path: 'none',
-                        key: obj.crypt_link,
-                        privileges: obj.privileges,
-                        files: q.files
-                    })
-                }
+                res.render('loginShared', {
+                    key: req.body.key,
+                    errorLogin: true,
+                });
             }
-
         } else {
             res.json({
                 status: false,
                 message: "bad request"
             });
         }
-    } else {
-        res.json({
-            status: false,
-            message: 'no session found'
-        })
     }
-};
+}
 
+
+exports.shared2 = async (req, res) => {
+    if (req.session.shared) {
+        let SO = await globalQueries.getAllSharedFiles();
+        if (SO.etat) {
+            sharedObject = SO.result;
+            let Key = req.query.key;
+            let folder = req.query.dir;
+            if (Object.keys(sharedObject).includes(Key)) {
+                let obj = sharedObject[Key];
+                if (folder !== undefined) {
+                    req.session.shared.path = setPath(req.session.shared.path, folder);
+                    let resuOne = await globalQueries.getFolder(folder);
+                    if (resuOne.etat) {
+                        let layout = await globalQueries.ResultFiles(resuOne.data);
+                        if (layout.etat) {
+                            res.render('clientside', {
+                                path: req.session.shared.path.includes('/') ? req.session.shared.path.split('/') : req.session.shared.path,
+                                privileges: obj.privileges,
+                                key: Key,
+                                files: layout.result,
+                            })
+                        }
+                    }
+                } else {
+                    req.session.shared.path = '';
+                    let t = obj.path.split('/');
+                    let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
+                    if (obj.path.includes('.')) {
+                        res.redirect(`/STORAGE/${obj.path}`);
+                    } else {
+                        let q = await globalQueries.getOneFolder(parent, t[t.length - 1]);
+                        if (q.etat) {
+                            res.render('clientside', {
+                                path: 'none',
+                                key: obj.crypt_link,
+                                privileges: obj.privileges,
+                                files: q.files
+                            })
+                        }
+                    }
+                }
+
+            } else {
+                res.status(404).render('error');
+            }
+        }
+    } else {
+        res.redirect(`/shared/${req.query.key}`);
+    }
+}
 
 
 

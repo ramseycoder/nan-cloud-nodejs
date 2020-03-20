@@ -56,12 +56,8 @@ $(function () {
                 $(this).parents('tr').css('background-color', 'rgb(203, 203, 203)');
                 $(this).css('display', 'block');
                 if (this.nextElementSibling.children[0] === undefined) {
-                    console.log('oui')
-                    console.log(this.nextElementSibling.textContent)
                     socket.emit('addgetFileSize', this.nextElementSibling.textContent)
                 } else {
-                    console.log('onn');
-                    console.log(this.nextElementSibling.children[0].textContent)
                     socket.emit('addgetFileSize', this.nextElementSibling.children[0].textContent)
                 };
 
@@ -75,6 +71,7 @@ $(function () {
             }
         })
     });
+
     $('tr').on('mouseleave', function () {
         this.children[0].children[0].style.display = "none !important";
     })
@@ -95,21 +92,19 @@ $(function () {
         let el = '';
         data.sharedOptions.forEach(opt => {
             el += `
-        <li><span class="link">http://localhost:4000/shared/${opt.crypt_link}</span><div class="right"><i class="fas fa-edit"></i><i class="fas fa-trash"></i></div></li>
+            <li><span class="link">http://localhost:5000/shared/${opt.crypt_link}</span><div class="right"><i onclick="updateShared('${data._id}','${opt.crypt_link}','${opt.password}','${opt.expirationDate}','${opt.privileges}','${opt.message}')"  class="fas fa-edit"></i><i onclick="DeleteShared('${data._id}','${opt.crypt_link}')")" class="fas fa-trash"></i></div></li>
         `;
         });
         $('#partager ul').html(el);
         $('#id_file').val(data._id);
-        let nameFolder = data.type === "file" ? data.name + '.' + data.mimetype : data.name
-        console.log('data.name => ', nameFolder);
-        console.log('type => ', getType(nameFolder));
+        let nameFolder = data.type === "file" ? data.name + '.' + data.mimetype : data.name;
         if (getType(nameFolder) === data.name) {
             donne = `<div class="repre">
                 <img src="/public/images/folder.png" width="100" height="100" />
               </div>
               <div class="info">
                 <h4>${nameFolder}</h4>
-                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (verifImage(nameFolder)) {
             donne = `<div class="repre">
@@ -117,7 +112,7 @@ $(function () {
               </div>
               <div class="info">
                   <h4>${nameFolder}</h4>
-                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (getType(nameFolder) === "mp3") {
             donne = `<div class="repre">
@@ -125,7 +120,7 @@ $(function () {
               </div>
               <div class="info">
                  <h4>${nameFolder}</h4>
-                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>$${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (getType(nameFolder) === "pdf") {
             donne = `<div class="repre">
@@ -133,7 +128,7 @@ $(function () {
               </div>
               <div class="info">
                 <h4>${nameFolder}</h4>
-                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (getType(nameFolder) === "txt") {
             donne = `<div class="repre">
@@ -141,7 +136,7 @@ $(function () {
               </div>
               <div class="info">
                 <h4>${nameFolder}</h4>
-                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (getType(nameFolder) === "mp4") {
             donne = `<div class="repre">
@@ -149,11 +144,10 @@ $(function () {
               </div>
               <div class="info">
                 <h4>${nameFolder}</h4>
-                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${data.date_creation}</span></p>
+                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         }
-        $('.right_content .contenu_article').html(donne)
-        console.log('data => ', data);
+        $('.right_content .contenu_article').html(donne);
         const boxContent = document.querySelector('.box_content');
         setTimeout(() => {
             boxContent.children[0].classList.remove('col-lg-12');
@@ -164,15 +158,23 @@ $(function () {
         $('.right_content').fadeIn(200);
     });
 
+    socket.on('deleteShared', (data) => {
+        let el = '';
+        data.sharedOptions.forEach(opt => {
+            el += `
+            <li><span class="link">http://localhost:5000/shared/${opt.crypt_link}</span><div class="right"><i onclick="updateShared('${data._id}','${opt.crypt_link}','${opt.password}','${opt.expirationDate}','${opt.privileges}','${opt.message}')"  class="fas fa-edit"></i><i onclick="DeleteShared('${data._id}','${opt.crypt_link}')")" class="fas fa-trash"></i></div></li>
+        `;
+        });
+        $('#partager ul').html(el);
+    })
 
     socket.on('shared', (data) => {
-        console.log('données', data);
         $('#modalPoll-1').modal('hide');
         resetSharedFormValue();
         let el = '';
         data.sharedOptions.forEach(opt => {
             el += `
-        <li><span class="link">http://localhost:4000/shared/${opt.crypt_link}</span><div class="right"><i class="fas fa-edit"></i><i class="fas fa-trash"></i></div></li>
+            <li><span class="link">http://localhost:5000/shared/${opt.crypt_link}</span><div class="right"><i onclick="updateShared('${data._id}','${opt.crypt_link}','${opt.password}','${opt.expirationDate}','${opt.privileges}','${opt.message}')"  class="fas fa-edit"></i><i onclick="DeleteShared('${data._id}','${opt.crypt_link}')")" class="fas fa-trash"></i></div></li>
         `;
         });
         $('#partager ul').html(el);
@@ -180,10 +182,14 @@ $(function () {
 
 
     socket.on('addgetFileSize', (data) => {
-        $('.deleteDownload').css('display', 'block');
         let t = $('.deleteDownload .taille span').text();
         let taille = t === '' ? 0 : parseFloat(t).toFixed(2);
         $('.deleteDownload .taille').html('');
+        if (taille === 0 || taille === "0.00") {
+            $('.deleteDownload').animate({
+                "right": "0%",
+            }, 500);
+        }
         taille = parseFloat(taille) + parseFloat(((data / 1000) / 1000).toFixed(2));
         $('.deleteDownload .taille').html(`<span>${taille.toFixed(2)}</span> Mo`);
     });
@@ -195,13 +201,14 @@ $(function () {
         taille = parseFloat(taille) - parseFloat(((data / 1000) / 1000).toFixed(2));
         $('.deleteDownload .taille').html(`<span>${taille.toFixed(2)}</span> Mo`);
         if (taille === 0.00) {
-            $('.deleteDownload').css('display', 'none');
+            $('.deleteDownload').animate({
+                "right": "-20%"
+            }, 500);
         }
     });
 })
 
 function submitForm(el) {
-    console.log('yes');
     const dat = el.children[0].value;
     $('.new_folder span').toggleClass('text');
     $('.new_folder span').toggleClass('form');
@@ -232,9 +239,7 @@ $('.add').on('click', function (e) {
 
 $('.new_folder').on('click', function (e) {
     e.preventDefault();
-    console.log($('.new_folder span').hasClass('text'));
     if ($('.new_folder span').hasClass('text')) {
-        console.log('oui merci ooh');
         $('.new_folder span').toggleClass('text');
         $('.new_folder span').toggleClass('form');
         $('.new_folder span.form').html(
@@ -283,8 +288,14 @@ $('.suppress').on('click', function () {
             }
         }
     });
-    console.log('files', files);
     socket.emit('deleteFiles', files);
+});
+
+$('table tbody tr').each(function (index) {
+    this.children[2].textContent = getRightFormatDate(this.children[2].textContent);
+})
+$('.share').on('click', () => {
+    resetSharedFormValue();
 });
 
 function showRightSide(fileid) {
@@ -319,15 +330,107 @@ function getShareConfig() {
         date: $('#dateToShare').val(),
         message: $('#messageToShare').val()
     }
-    console.log('shared', data);
     socket.emit('shared', data);
 }
 
+function getUpdateShared() {
+    let checkValue = '';
+    $('input[name="group1"]').each(function () {
+        if ($(this).is(':checked')) {
+            checkValue = $(this).val()
+        }
+    })
+    const data = {
+        id_file: $('#id_file').val(),
+        crypt_link: $('#id_cryptlink').val(),
+        privilege: checkValue.includes('&') ?
+            checkValue.split('&') : [checkValue],
+        password: $('#passwordToShare').val(),
+        date: $('#dateToShare').val(),
+        message: $('#messageToShare').val()
+    }
+    console.log('oui', data);
+    socket.emit('updateShared', data);
+}
+
+function DeleteShared(id, crypt_link) {
+    const data = {
+        file_id: id,
+        crypt_link: crypt_link
+    }
+    socket.emit('deleteShared', data);
+}
+
+function updateShared(id, cl, password, expiration, privileges, message) {
+    let p = privileges.includes(',') ? privileges.split(',') : [privileges.toString()];
+    $('#id_file').val(id);
+    $('#id_cryptlink').val(cl);
+    $('.lead').text('modification de partage');
+    $('.text').html('modifier les options de partage de votre fichier')
+    $('.modal-footer .btn-primary').css('display', 'none');
+    $('.modal-footer .btn-default').css('display', 'block');
+    $('#messageToShare').val(message);
+    if (password !== '' && password !== 'null') {
+        $('#passwordProtection').attr('checked', true);
+        $('#passwordToShare').css('display', 'block');
+        $('#passwordToShare').val(password);
+    }
+    if (expiration !== '' && expiration !== 'null') {
+        $('#ExpirationDate').attr('checked', true);
+        $('#dateToShare').css('display', 'block');
+        let year = new Date(expiration).getFullYear();
+        let month = (new Date(expiration).getMonth() + 1) < 10 ? '0' + (new Date(expiration).getMonth() + 1) : (new Date(expiration).getMonth() + 1);
+        let day = new Date(expiration).getDate();
+        $('#dateToShare').val(year + '-' + month + '-' + day);
+    }
+    if (p.includes('download') && !p.includes('read')) {
+        $('#rd').attr('checked', false);
+        $('#rwd').attr('checked', false);
+        $('#d').attr('checked', true);
+    } else if (p.includes('download') && p.includes('read') && !p.includes('write')) {
+        $('#d').attr('checked', false);
+        $('#rwd').attr('checked', false);
+        $('#rd').attr('checked', true);
+    } else {
+        $('#rd').attr('checked', false);
+        $('#d').attr('checked', false);
+        $('#rwd').attr('checked', true);
+    }
+    $('#modalPoll-1').modal('show');
+}
+
+
 function resetSharedFormValue() {
-    $('#id_file').val('');
-    $('#passwordToShare').val('');
+    $('.lead').text('formulaire de partage');
+    $('.text').html(`partager vos données avec d'autres personnes
+    <strong>veuillez remplir les champs suivants</strong>`);
+    $('input[name="group1"]').each(function () {
+        $(this).attr('checked', false);
+    })
+    $('#passwordToShare').val('').css('display', 'none');
     $('#passwordProtection').attr('checked', false);
-    $('#expirationDate').attr('checked', false);
-    $('#dateToShare').val('');
+    $('#ExpirationDate').attr('checked', false);
+    $('#dateToShare').val('').css('display', 'none');;
     $('#messageToShare').val('');
+    $('.modal-footer .btn-primary').css('display', 'block');
+    $('.modal-footer .btn-default').css('display', 'none');
+}
+
+
+
+function getRightFormatDate(date) {
+    let secondes = (new Date().getTime() / 1000) - (new Date(date).getTime() / 1000);
+    let sate = new Date(date);
+    if (secondes > 604800) {
+        return getDay(sate.getDay()) + ' ' + sate.getDate() + ' ' + getMonth(sate.getMonth()) + ' ' + sate.getFullYear();
+    } else if (secondes > 86400) {
+        return `il y a ${parseInt(secondes/86400)} jours`;
+    } else if (secondes > 3600) {
+        return `il y a ${parseInt(secondes/3600)} heures`;
+    } else if (secondes > 60) {
+        return `il y a ${parseInt(secondes/60)} minutes`;
+    } else {
+        return `maintenant`;
+    }
+
 }

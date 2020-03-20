@@ -19,6 +19,8 @@ const upload = multer({
 router.get('/', globalController.index);
 router.get('/app/files', globalController.appFiles);
 router.post('/upload-file', upload.single('file'), globalController.uploadFile);
+router.get('/admin/cloud', globalController.adminLogin);
+router.post('/admin/cloud', globalController.adminLoginPost);
 router.get('/shared', globalController.shared2);
 router.get('/shared/:key', globalController.shared1);
 router.post('/shared/:key', globalController.shared1Post);

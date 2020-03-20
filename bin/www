@@ -146,6 +146,20 @@ io.on('connection', socket => {
       }
     });
 
+    socket.on('deleteShared', async (data) => {
+      resu = await globalQueries.deleteShared(data);
+      if (resu.etat) {
+        socket.emit('deleteShared', resu.data);
+      }
+    })
+
+    socket.on('updateShared', async (data) => {
+      resu = await globalQueries.updateShared(data);
+      if (resu.etat) {
+        socket.emit('shared', resu.data);
+      }
+    })
+
   } catch (e) {
 
   }
@@ -172,6 +186,94 @@ function verifPoint(str) {
   return tab[tab.length - 1];
 }
 
+function getDay(d) {
+  switch (d) {
+    case 1:
+      return 'Lun';
+      break;
+    case 2:
+      return 'Mar';
+      break;
+    case 3:
+      return 'Mer';
+      break;
+    case 4:
+      return 'Jeu';
+      break;
+    case 5:
+      return 'Vend';
+      break;
+    case 6:
+      return 'sam';
+      break;
+    default:
+      return "Dim";
+      break;
+  }
+}
+
+
+function getMonth(d) {
+  switch (d) {
+    case 1:
+      return 'Fev';
+      break;
+    case 2:
+      return 'Mars';
+      break;
+    case 3:
+      return 'Avril';
+      break;
+    case 4:
+      return 'Mai';
+      break;
+    case 5:
+      return 'Juin';
+      break;
+    case 6:
+      return 'Jul';
+      break;
+    case 7:
+      return "Août";
+      break;
+    case 8:
+      return "Sept";
+      break;
+    case 9:
+      return "Oct";
+      break;
+    case 10:
+      return "Nov";
+      break;
+    case 11:
+      return "Dec";
+      break;
+    default:
+      return "Jan";
+      break;
+  }
+}
+
+function getRightFormatDate(date) {
+  let secondes = (new Date().getTime() / 1000) - (new Date(date).getTime() / 1000);
+  let sate = new Date(date);
+  if (secondes > 604800) {
+    return getDay(sate.getDay()) + ' ' + sate.getDate() + ' ' + getMonth(sate.getMonth()) + ' ' + sate.getFullYear();
+  } else if (secondes > 86400) {
+    return `il y a ${parseInt(secondes/86400)} jours`;
+  } else if (secondes > 3600) {
+    return `il y a ${parseInt(secondes/3600)} heures`;
+  } else if (secondes > 60) {
+    return `il y a ${parseInt(secondes/60)} minutes`;
+  } else {
+    return `maintenant`;
+  }
+
+}
+
+
+
+
 function onSucces(files) {
   if (files.length === 0) {
     return '<p>le dossier est vide</p>';
@@ -188,7 +290,7 @@ function onSucces(files) {
     <tbody>`;
     let output = '';
     files.forEach(donne => {
-      let el = `<tr onclick='showRightSide(${donne._id})'>`;
+      let el = `<tr onclick="showRightSide('${donne._id}')">`;
       if (getType(donne.name) === donne.name) {
         el += `
             <td class="nameOptions">
@@ -197,8 +299,8 @@ function onSucces(files) {
                 href="/app/files/?dir=${donne.name}">${donne.name}</a></span></div>
             <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
           </td>
-          <td style="text-align: center">${donne.size} ko</td>
-          <td style="text-align: center">${donne.date_creation}</td>
+          <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)} Mo</td>
+          <td style="text-align: center">${getRightFormatDate(donne.date_creation)}</td>
         `;
       } else if (getType(donne.name) === "mp4") {
         el += `
@@ -207,8 +309,8 @@ function onSucces(files) {
               class="form-check childCheck"><span class="file_name">${donne.name}</span></div>
           <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
         </td>   
-        <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)} Mo</td>
-        <td style="text-align: center">${donne.date_creation}</td>
+        <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}   Mo</td>
+        <td style="text-align: center">${getRightFormatDate(donne.date_creation)}</td>
       `;
       } else if (getType(donne.name) === "mp3") {
         el += `
@@ -218,7 +320,7 @@ function onSucces(files) {
           <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
         </td>
         <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
-        <td style="text-align: center">${donne.date_creation}</td>
+        <td style="text-align: center">${getRightFormatDate(donne.date_creation)}</td>
       `;
       } else if (getType(donne.name) === "pdf") {
         el += `
@@ -228,7 +330,7 @@ function onSucces(files) {
           <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
         </td>
         <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
-        <td style="text-align: center">${donne.date_creation}</td>
+        <td style="text-align: center">${getRightFormatDate(donne.date_creation)}</td>
       `;
       } else if (getType(donne.name) === "txt") {
         el += `
@@ -238,7 +340,7 @@ function onSucces(files) {
           <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
         </td>
         <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
-        <td style="text-align: center">${donne.date_creation}</td>
+        <td style="text-align: center">${getRightFormatDate(donne.date_creation)}</td>
       `;
       } else if (verifImage(donne.name)) {
         el += `
@@ -248,7 +350,7 @@ function onSucces(files) {
           <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
         </td>
         <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)}  Mo</td>
-        <td style="text-align: center">${donne.date_creation}</td>
+        <td style="text-align: center">${getRightFormatDate(donne.date_creation)}</td>
       `;
       } else {
         el += `
@@ -258,7 +360,7 @@ function onSucces(files) {
         <div class="right">${donne.shared ? 'shared' : '<i class="fas fa-share-alt"></i>'}</div>
       </td>
       <td style="text-align: center">${((donne.size/1000)/1000).toFixed(2)} Mo</td>
-      <td style="text-align: center">${donne.date_creation}</td>
+      <td style="text-align: center">${getRightFormatDate(donne.date_creation)}</td>
     `;
       }
       el += "</tr>";
