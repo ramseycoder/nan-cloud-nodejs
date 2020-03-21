@@ -124,12 +124,7 @@ socket.on('removegetFileSize', (data) => {
 
 
 let showrightside = true;
-$('.childCheck').on('mouseover', function () {
-    showrightside = false;
-});
-$('.childCheck').on('mouseleave', function () {
-    showrightside = true
-})
+
 $('.globalCheck').on('change', function () {
     if (showrightside) {
         showrightside = false;
@@ -141,32 +136,66 @@ $('.globalCheck').on('change', function () {
 
 });
 
+$('.download').on('click', function () {
+    $('.downloadDiv').html(' ');
+    showrightside = false;
+    $('.childCheck').each(function () {
+        if ($(this).is(':checked')) {
+            if (this.nextElementSibling.children[0] === undefined) {
+                $('.downloadDiv').html($('.downloadDiv').html() + `<a href="/downloadShare?type=file&file=${this.nextElementSibling.textContent}" >download</a>`);
+            } else {
+                $('.downloadDiv').html($('.downloadDiv').html() + `<a href="/downloadShare?type=folder&dir=${this.nextElementSibling.children[0].textContent}">download</a>`);
+            }
+        }
+        $(this).click();
+        $(this).parents('tr').css('background-color', 'transparent');
+    });
+
+    $('.downloadDiv a').each(function (index) {
+        setTimeout(() => {
+            this.click();
+        }, 100 * (index + 1))
+
+    });
+    $('.downloadDiv').html('');
+    $('.deleteDownload .taille span').html('0.00');
+    $('.deleteDownload').fadeOut(300);
+});
 
 $('table tbody tr').each(function (index) {
     this.children[2].textContent = getRightFormatDate(this.children[2].textContent);
 })
 
-$('.childCheck').each(function () {
-    $(this).on('change', function () {
-        if ($(this).is(':checked')) {
-            $(this).parents('tr').css('background-color', 'rgb(203, 203, 203)');
-            $(this).css('display', 'block');
-            if (this.nextElementSibling.children[0] === undefined) {
-                socket.emit('addgetFileSize', this.nextElementSibling.textContent)
-            } else {
-                socket.emit('addgetFileSize', this.nextElementSibling.children[0].textContent)
-            };
 
+function setFalse() {
+    showrightside = false;
+}
+
+function setTrue() {
+    showrightside = true;
+}
+
+function Change(el) {
+    if ($(el).is(':checked')) {
+        $(el).parents('tr').css('background-color', 'rgb(203, 203, 203)');
+        $(el).css('display', 'block');
+        if (el.nextElementSibling.children[0] === undefined) {
+            socket.emit('addgetFileSize', el.nextElementSibling.textContent)
         } else {
-            $(this).parents('tr').css('background-color', 'transparent');
-            if (this.nextElementSibling.children[0] === undefined) {
-                socket.emit('removegetFileSize', this.nextElementSibling.textContent)
-            } else {
-                socket.emit('removegetFileSize', this.nextElementSibling.children[0].textContent)
-            };
-        }
-    })
-});
+            socket.emit('addgetFileSize', el.nextElementSibling.children[0].textContent)
+        };
+
+    } else {
+        $(el).parents('tr').css('background-color', 'transparent');
+        if (el.nextElementSibling.children[0] === undefined) {
+            socket.emit('removegetFileSize', el.nextElementSibling.textContent)
+        } else {
+            socket.emit('removegetFileSize', el.nextElementSibling.children[0].textContent)
+        };
+    }
+}
+
+
 $('tr').on('mouseleave', function () {
     this.children[0].children[0].style.display = "none !important";
 })

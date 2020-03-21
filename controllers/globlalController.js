@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const random = require('random-key');
+const child_process = require('child_process');
 const {
     globalQueries
 } = require('../Queries/globalQuerie');
@@ -77,48 +78,22 @@ exports.appFiles = async (req, res) => {
 
 exports.uploadFile = async (req, res) => {
     console.log('file', req.file)
-    let mimetype = req.file.mimetype.slice(req.file.mimetype.indexOf('/') + 1, req.file.mimetype.length);
-    if (mimetype === "mp4") {
-        const B = {};
-        B.name = req.file.originalname.slice(0, verifPoint(req.file.originalname));
-        B.mimetype = req.file.mimetype.slice(req.file.mimetype.indexOf('/') + 1, req.file.mimetype.length);
-        fs.createReadStream(req.file.path).pipe(fs.createWriteStream(path.join(__dirname, '../BigData', req.file.originalname)));
-        B.buffer = null
-        B.type = "file";
-        B.size = req.file.size;
-        B.folder_id = currentFolderId;
-        const resu = await globalQueries.setFile(B);
-        if (resu.etat) {
-            /*  const output = await globalQueries.ResultFiles(resu.data);
-              if (output.etat) {  
-                console.log('result', output.result);
-              } */
-            res.json({
-                status: true,
-                message: 'merci à vous'
-            });
-        }
-    } else {
-        fs.readFile(req.file.path, async (err, data) => {
-            if (err) throw err;
-            const B = {};
-            B.name = req.file.originalname.slice(0, verifPoint(req.file.originalname));
-            B.mimetype = req.file.mimetype.slice(req.file.mimetype.indexOf('/') + 1, req.file.mimetype.length);
-            B.buffer = Buffer.from(data, 'base64');
-            B.size = req.file.size;
-            B.type = "file";
-            B.folder_id = currentFolderId;
-            const resu = await globalQueries.setFile(B);
-            if (resu.etat) {
-                /*  const output = await globalQueries.ResultFiles(resu.data);
-                  if (output.etat) {  
-                    console.log('result', output.result);
-                  } */
-                res.json({
-                    status: true,
-                    message: 'merci à vous'
-                });
-            }
+    let link = folder_path === '' ? path.join(__dirname, '../BigData') : path.join(__dirname, '../BigData', folder_path);
+    console.log('link', link);
+    let tab = req.file.originalname.split('');
+    const B = {};
+    B.name = req.file.originalname.slice(0, verifPoint(req.file.originalname));
+    B.mimetype = tab.slice(verifPoint(tab) + 1, tab.length).join('');
+    console.log('mimetype', B.mimetype);
+    fs.createReadStream(req.file.path).pipe(fs.createWriteStream(path.join(link, req.file.originalname)));
+    B.type = "file";
+    B.size = req.file.size;
+    B.folder_id = currentFolderId;
+    const resu = await globalQueries.setFile(B);
+    if (resu.etat) {
+        res.json({
+            status: true,
+            message: 'merci à vous'
         });
     }
 };
@@ -126,6 +101,7 @@ exports.uploadFile = async (req, res) => {
 
 exports.shared1 = async (req, res) => {
     if (req.session.shared) {
+        console.log('session', req.session.shared);
         res.redirect(`/shared?key=${req.session.shared.keyShared}`)
     } else {
         let SO = await globalQueries.getAllSharedFiles();
@@ -151,7 +127,8 @@ exports.shared1 = async (req, res) => {
                                 req.session.shared = {
                                     key: random.generate(16),
                                     keyShared: obj.crypt_link,
-                                    path: ''
+                                    path: '',
+                                    realPath: t.slice(0, t.length - 1) === '' ? '' : t.slice(0, t.length - 1).join('/')
                                 };
                                 req.session.save();
                                 let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
@@ -170,18 +147,23 @@ exports.shared1 = async (req, res) => {
                         res.render('link_expired')
                     }
                 } else {
+                    console.log('obj', obj);
                     if (obj.password !== null && obj.password !== '') {
-                        res.render('loginShared');
+                        res.render('loginShared', {
+                            key: obj.crypt_link,
+                            errorLogin: false
+                        });
                     } else {
                         let t = obj.path.split('/');
                         let filename = t[t.length - 1];
                         if (filename.includes('.')) {
-                            res.redirect(`/STORAGE/${filename}`);
+                            res.redirect(`/STORAGE/${obj.path}`);
                         } else {
                             req.session.shared = {
                                 key: random.generate(16),
                                 keyShared: obj.crypt_link,
-                                path: ''
+                                path: '',
+                                realPath: t.slice(0, t.length - 1) === '' ? '' : t.slice(0, t.length - 1).join('/')
                             };
                             req.session.save();
                             let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
@@ -219,7 +201,8 @@ exports.shared1Post = async (req, res) => {
                     req.session.shared = {
                         key: random.generate(16),
                         keyShared: obj.crypt_link,
-                        path: ''
+                        path: '',
+                        realPath: t.slice(0, t.length - 1) === '' ? '' : t.slice(0, t.length - 1).join('/')
                     };
                     req.session.save();
                     let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
@@ -260,8 +243,10 @@ exports.shared2 = async (req, res) => {
                 let obj = sharedObject[Key];
                 if (folder !== undefined) {
                     req.session.shared.path = setPath(req.session.shared.path, folder);
+                    req.session.shared.realPath = setPath(req.session.shared.realPath, folder);
                     let resuOne = await globalQueries.getFolder(folder);
                     if (resuOne.etat) {
+                        console.log('data', resuOne.data);
                         let layout = await globalQueries.ResultFiles(resuOne.data);
                         if (layout.etat) {
                             res.render('clientside', {
@@ -275,8 +260,9 @@ exports.shared2 = async (req, res) => {
                 } else {
                     req.session.shared.path = '';
                     let t = obj.path.split('/');
+                    req.session.realPath = t.slice(0, t.length - 1) ? '' : t.slice(0, t.length - 1).join('/');
                     let parent = t[t.length - 2] === '' ? 'root' : t[t.length - 2];
-                    if (obj.path.includes('.')) {
+                    if (t[t.length - 1].includes('.')) {
                         res.redirect(`/STORAGE/${obj.path}`);
                     } else {
                         let q = await globalQueries.getOneFolder(parent, t[t.length - 1]);
@@ -300,7 +286,50 @@ exports.shared2 = async (req, res) => {
     }
 }
 
+exports.download = async (req, res) => {
+    let p = folder_path === '' ? path.join(__dirname, '../BigData') : path.join(__dirname, '../BigData', folder_path);
+    if (req.query.type == "file") {
+        res.download(path.join(p, req.query.file));
+    } else {
+        child_process.execSync(`zip -r ${req.query.dir} *`, {
+            cwd: p
+        });
+        res.download(path.join(p, `${req.query.dir}.zip`), (err) => {
+            if (!err)(
+                fs.unlink(path.join(p, `${req.query.dir}.zip`), (err, f) => {
+                    if (err) throw err;
+                })
+            )
+        });
+        /*   */
+    }
+}
 
+exports.downloadShare = async (req, res) => {
+    if (req.session.shared) {
+        // console.log('path', req.session.shared.realPath);
+        let p = req.session.shared.realPath === '' ? path.join(__dirname, '../BigData') : path.join(__dirname, '../BigData', req.session.shared.realPath);
+        console.log('path', p);
+        if (req.query.type == "file") {
+            res.download(path.join(p, req.query.file));
+        } else {
+            child_process.execSync(`zip -r ${req.query.dir} *`, {
+                cwd: p
+            });
+            res.download(path.join(p, `${req.query.dir}.zip`), (err) => {
+                if (!err)(
+                    fs.unlink(path.join(p, `${req.query.dir}.zip`), (err, f) => {
+                        if (err) throw err;
+                    })
+                )
+            });
+
+        }
+    } else {
+        res.status(404).render('error');
+    }
+
+}
 
 function setPath(Gpath, folder) {
     if (Gpath === '') {
@@ -315,6 +344,7 @@ function setPath(Gpath, folder) {
         }
     }
 }
+
 
 function verifPoint(str) {
     const tab = [];

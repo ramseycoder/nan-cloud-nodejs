@@ -1,5 +1,7 @@
 const socket = io();
-
+let path = $('.folder_path').text();
+if (path.includes(',')) path = path.split(',').join('/')
+else if (path === 'none') path = ""
 var previewNode = document.querySelector("#template");
 var previewTemplate = previewNode.innerHTML;
 previewNode.parentNode.removeChild(previewNode);
@@ -32,12 +34,9 @@ myDropzone.on('queuecomplete', function () {
 let canSupp = true;
 let mouseOverDropDown = false;
 let showrightside = true;
-$('.childCheck').on('mouseover', function () {
-    showrightside = false;
-});
-$('.childCheck').on('mouseleave', function () {
-    showrightside = true
-})
+
+
+
 $(function () {
     $('.globalCheck').on('change', function () {
         if (showrightside) {
@@ -50,27 +49,7 @@ $(function () {
 
     });
 
-    $('.childCheck').each(function () {
-        $(this).on('change', function () {
-            if ($(this).is(':checked')) {
-                $(this).parents('tr').css('background-color', 'rgb(203, 203, 203)');
-                $(this).css('display', 'block');
-                if (this.nextElementSibling.children[0] === undefined) {
-                    socket.emit('addgetFileSize', this.nextElementSibling.textContent)
-                } else {
-                    socket.emit('addgetFileSize', this.nextElementSibling.children[0].textContent)
-                };
 
-            } else {
-                $(this).parents('tr').css('background-color', 'transparent');
-                if (this.nextElementSibling.children[0] === undefined) {
-                    socket.emit('removegetFileSize', this.nextElementSibling.textContent)
-                } else {
-                    socket.emit('removegetFileSize', this.nextElementSibling.children[0].textContent)
-                };
-            }
-        })
-    });
 
     $('tr').on('mouseleave', function () {
         this.children[0].children[0].style.display = "none !important";
@@ -107,13 +86,23 @@ $(function () {
                   <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (verifImage(nameFolder)) {
-            donne = `<div class="repre">
-                <img src="/STORAGE/${nameFolder}" width="100" height="100"/>
-              </div>
-              <div class="info">
-                  <h4>${nameFolder}</h4>
-                  <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
-              </div>`
+            let s = '';
+            donne = `<div class="repre">`;
+            if (path === "") {
+                s = `<img src = "/STORAGE/${nameFolder}"
+            width = "100"
+            height = "100"/>`
+            } else {
+                s = `<img src = "/STORAGE/${path}/${nameFolder}"
+            width = "100"
+            height = "100"/>`
+            };
+            donne += s;
+            donne += `  
+                </div> <div class = "info">
+                <h4>${nameFolder}</h4><p><span>${
+                    ((data.size / 1000) / 1000).toFixed(2)
+                }Mo</span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span> </p></div>`;
         } else if (getType(nameFolder) === "mp3") {
             donne = `<div class="repre">
                        <img src="/public/images/folder.png" width="100" height="100" />
@@ -291,12 +280,60 @@ $('.suppress').on('click', function () {
     socket.emit('deleteFiles', files);
 });
 
+$('.download').on('click', function () {
+    $('.downloadDiv').html(' ');
+    showrightside = false;
+    $('.childCheck').each(function () {
+        if ($(this).is(':checked')) {
+            if (this.nextElementSibling.children[0] === undefined) {
+                $('.downloadDiv').html($('.downloadDiv').html() + `<a href="/download?type=file&file=${this.nextElementSibling.textContent}" >download</a>`);
+            } else {
+                $('.downloadDiv').html($('.downloadDiv').html() + `<a href="/download?type=folder&dir=${this.nextElementSibling.children[0].textContent}">download</a>`);
+            }
+        }
+        $(this).click();
+        $(this).parents('tr').css('background-color', 'transparent');
+    });
+
+    $('.downloadDiv a').each(function (index) {
+        setTimeout(() => {
+            this.click();
+        }, 100 * (index + 1))
+
+    });
+    $('.downloadDiv').html('');
+    $('.deleteDownload .taille span').html('0.00');
+    $('.deleteDownload').fadeOut(300);
+});
+
 $('table tbody tr').each(function (index) {
     this.children[2].textContent = getRightFormatDate(this.children[2].textContent);
 })
 $('.share').on('click', () => {
     resetSharedFormValue();
 });
+
+
+function Change(el) {
+    if ($(el).is(':checked')) {
+        $(el).parents('tr').css('background-color', 'rgb(203, 203, 203)');
+        $(el).css('display', 'block');
+        if (el.nextElementSibling.children[0] === undefined) {
+            socket.emit('addgetFileSize', el.nextElementSibling.textContent)
+        } else {
+            socket.emit('addgetFileSize', el.nextElementSibling.children[0].textContent)
+        };
+
+    } else {
+        $(el).parents('tr').css('background-color', 'transparent');
+        if (el.nextElementSibling.children[0] === undefined) {
+            socket.emit('removegetFileSize', el.nextElementSibling.textContent)
+        } else {
+            socket.emit('removegetFileSize', el.nextElementSibling.children[0].textContent)
+        };
+    }
+}
+
 
 function showRightSide(fileid) {
     if (showrightside) {
@@ -432,5 +469,12 @@ function getRightFormatDate(date) {
     } else {
         return `maintenant`;
     }
+}
 
+function setFalse() {
+    showrightside = false;
+}
+
+function setTrue() {
+    showrightside = true;
 }

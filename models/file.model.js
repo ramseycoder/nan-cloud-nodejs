@@ -9,7 +9,6 @@ const FileSchema = new Schema({
         type: String,
         required: true
     },
-    buffer: Buffer,
     mimetype: {
         type: String,
     },

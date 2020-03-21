@@ -37,8 +37,9 @@
   %>
     <div class="deleteDownload">
         <span class="taille"><span></span></span>
-        <i class="fas fa-download"></i>
+        <i class="fas fa-download download"></i>
     </div>
+    <div class="downloadDiv"></div>
     <p class="privileges" style="display:none"><%= privileges %></p>
     <nav class="navbar navbar-dark indigo ">
         <a class="navbar-brand" href="#">
@@ -200,79 +201,113 @@
                                     <% if(getType(file.name) === file.name){%>
                                     <td class="nameOptions">
                                         <div class="left"><img src="/public/images/folder.png" width="50"> <input
-                                                type="checkbox" class="form-check childCheck"><span class="file_name"><a
+                                                onchange="Change(this)" onmouseover="setFalse()"
+                                                onmouseleave="setTrue()" type="checkbox"
+                                                class="form-check childCheck"><span class="file_name"><a
                                                     href="/shared?key=<%= key %>&dir=<%= file.name %>"><%= file.name %></a></span>
                                         </div>
-                                    </td>
-                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
+                                                class="fas fa-share-alt"></i><%}%>
+                                    </div>
+                                  </td>
+                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%} else if(verifImage(file.name)){%>
                                     <td class="nameOptions">
-                                        <div class="left"><img src="/public/images/pictures.png" width="50"></i>
-                                            <input type="checkbox" class="form-check childCheck"><span
-                                                class="file_name"><%= file.name %></span></div>
-
-                                    </td>
-                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                        <div class="left"><% if(path === 'none'){%><img src="/STORAGE/<%= file.name %>"
+                                                width="50"><%}else if(typeof(path) === "string"){%><img
+                                                src="/STORAGE/<%= path %>/<%= file.name %>" width="50"><%}else{%><img
+                                                src="/STORAGE/<%= path.join('/') %>/<%= file.name %>" width="50"><%}%></i> <input onchange="Change(this)" onmouseover="setFalse()" onmouseleave="setTrue()" type="checkbox"
+                                        class="form-check childCheck"><span class="file_name"><%= file.name %></span>
+                                        </div>
+                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
+                                                class="fas fa-share-alt"></i><%}%>
+                                    </div>
+                                  </td>
+                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else if(getType(file.name) === "mp4"){%>
                                     <td class="nameOptions">
                                         <div class="left"><img src="/public/images/video-player.png" width="50"></i>
-                                            <input type="checkbox" class="form-check childCheck"><span
+                                            <input onmouseover="setFalse()" onmouseleave="setTrue()"
+                                                onchange="Change(this)" type="checkbox"
+                                                class="form-check childCheck"><span
                                                 class="file_name"><%= file.name %></span>
                                         </div>
-                                    </td>
-                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
+                                                class="fas fa-share-alt"></i><%}%>
+                                        </i></div>
+                                  </td>
+                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else if(getType(file.name) === "pdf"){%>
                                     <td class="nameOptions">
                                         <div class="left"><img src="/public/images/pdf.png" width="50"></i> <input
-                                                type="checkbox" class="form-check childCheck"><span
+                                                onmouseover="setFalse()" onmouseleave="setTrue()"
+                                                onchange="Change(this)" type="checkbox"
+                                                class="form-check childCheck"><span
                                                 class="file_name"><%= file.name %></span>
                                         </div>
-                                    </td>
-                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
+                                                class="fas fa-share-alt"></i><%}%>
+                                        </i></div>
+                                  </td>
+                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else if(getType(file.name) === "txt"){%>
                                     <td class="nameOptions">
                                         <div class="left"><img src="/public/images/txt.png" width="50"></i> <input
-                                                type="checkbox" class="form-check childCheck"><span
+                                                onmouseover="setFalse()" onmouseleave="setTrue()"
+                                                onchange="Change(this)" type="checkbox"
+                                                class="form-check childCheck"><span
                                                 class="file_name"><%= file.name %></span>
                                         </div>
-                                    </td>
-                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
+                                                class="fas fa-share-alt"></i><%}%>
+                                        </i></div>
+                                  </td>
+                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else if(getType(file.name) === "mp3"){ %>
                                     <td class="nameOptions">
                                         <div class="left"><i class="fas fa-audio-description"></i> <input
-                                                type="checkbox" class="form-check childCheck"><span
+                                                onmouseover="setFalse()" onmouseleave="setTrue()"
+                                                onchange="Change(this)" type="checkbox"
+                                                class="form-check childCheck"><span
                                                 class="file_name"><%= file.name %></span>
                                         </div>
-                                    </td>
-                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
+                                                class="fas fa-share-alt"></i><%}%>
+                                        </i></div>
+                                  </td>
+                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else{%>
                                     <td class="nameOptions">
-                                        <div class="left"><i class="fas fa-file"></i> <input type="checkbox"
+                                        <div class="left"><i class="fas fa-file"></i> <input onchange="Change(this)"
+                                                type="checkbox" onmouseover="setFalse()" onmouseleave="setTrue()"
                                                 class="form-check childCheck"><span
                                                 class="file_name"><%= file.name %></span></div>
-                                    </td>
-                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
+                                                class="fas fa-share-alt"></i><%}%>
+                                        </i></div>
+                                  </td>
+                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}%>
-                      </tr>
-                      <% }) %>
+                                    </tr>
+                                    <% }) %>
                             </tbody>
                         </table>
                         <%}%>
-            </div>
+                          </div>
           </div>
         </div>
       </div>

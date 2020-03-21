@@ -4,6 +4,7 @@ const Admin = require('../models/admin.model');
 const path = require('path');
 const Dir = path.join(__dirname, '../BigData');
 const fs = require('fs');
+const rimraf = require('rimraf');
 exports.globalQueries = class {
     static getAdmin(data) {
         return new Promise(async next => {
@@ -111,6 +112,10 @@ exports.globalQueries = class {
 
     static setUnderFolder(data) {
         return new Promise(async next => {
+            let link = folder_path === '' ? path.join(__dirname, '../BigData') : path.join(__dirname, '../BigData', folder_path);
+            fs.mkdir(path.join(link, data.folder), function (err, res) {
+                if (err) throw err;
+            })
             const folder = await Folder.findOne({
                 name: data.foldername
             }).then(r => r);
@@ -144,73 +149,12 @@ exports.globalQueries = class {
         })
     }
 
-    static setFolder(name) {
-        return new Promise(async next => {
-            const folder = await new Folder({
-                name: name
-            });
-            folder.save().then(r => {
-                next({
-                    etat: true,
-                    data: r
-                });
-            }).catch(e => {
-                next({
-                    etat: false,
-                    err: e
-                });
-            })
-        })
-    }
-
-
-    static removeFile(data) {
-        return new Promise(async next => {
-            await Folder.findOne({
-                name: data.foldername
-            }, {
-                $pull: {
-                    files: data.fileid
-                }
-            }).then(r => {
-                next({
-                    etat: true,
-                    data: r
-                });
-            }).catch(err => {
-                next({
-                    etat: false,
-                    err: err
-                });
-            });
-        })
-    }
-
-
-    static removeFolder(name) {
-        return new Promise(async next => {
-            await Folder.findOneAndRemove({
-                name: name
-            }).then(r => {
-                next({
-                    etat: true,
-                    data: r
-                });
-            }).catch(err => {
-                next({
-                    etat: false,
-                    err: err
-                });
-            });
-        })
-    }
-
-
     static getFolder(name) {
         return new Promise(async next => {
             await Folder.findOne({
                 name: name
             }).populate('files').then(r => {
+                console.log('r', r);
                 next({
                     etat: true,
                     data: r
@@ -389,11 +333,6 @@ exports.globalQueries = class {
             } else {
                 let output = [];
                 data.files.forEach((file, index) => {
-                    if (file.type === "file" && file.mimetype !== "mp4") {
-                        fs.writeFile(path.join(Dir, file.name + '.' + file.mimetype), file.buffer, (err, dat) => {
-                            if (err) throw err
-                        });
-                    }
                     let obj = {
                         _id: file.id,
                         name: file.type == "file" ? file.name + '.' + file.mimetype : file.name,
@@ -418,14 +357,18 @@ exports.globalQueries = class {
     static updateFolderSize(id, size) {
         return new Promise(async next => {
             await Folder.findById(id).then(async r => {
-                r.size += size;
-                r.save();
-                await File.findOne({
-                    folder_id: r._id
-                }).then(s => {
-                    s.size = r.size;
-                    s.save();
-                })
+                if (r !== null) {
+                    r.size += size;
+                    r.save();
+                    await File.findOne({
+                        folder_id: r._id
+                    }).then(s => {
+                        if (s !== null) {
+                            s.size = r.size;
+                            s.save();
+                        }
+                    })
+                }
             })
         });
     }
@@ -457,8 +400,6 @@ exports.globalQueries = class {
     }
 
     static getOneFolder(parent, child) {
-        console.log('parent', parent);
-        console.log('child', child);
         return new Promise(async next => {
             let Files = [];
             await Folder.findOne({
@@ -491,13 +432,24 @@ exports.globalQueries = class {
     }
 
     static deleteFiles(files) {
+        let link = folder_path === '' ? path.join(__dirname, '../BigData') : path.join(__dirname, '../BigData', folder_path);
         return new Promise(async next => {
             files.forEach(async (file, index) => {
                 if (file["type"] === "file") {
+                    console.log('originalname', file['originalname']);
+                    fs.unlink(path.join(link, file["originalname"]), (err, st) => {
+                        if (err) throw err;
+                    });
+
                     await File.findOneAndRemove({
                         name: file["file"]
                     });
                 } else {
+
+                    rimraf(path.join(link, file["file"]), (err, s) => {
+                        if (err) throw err;
+                    });
+
                     await File.findOneAndRemove({
                         name: file["file"]
                     });
@@ -511,12 +463,10 @@ exports.globalQueries = class {
                                 "file": f.name
                             });
                             if (index === r.files.length - 1) {
-                                let s = await this.deleteFiles(F);
-                                if (s.etat) {
-                                    await Folder.findOneAndRemove({
-                                        name: file['file']
-                                    })
-                                }
+                                await this.deleteFiles(F);
+                                await Folder.findOneAndRemove({
+                                    name: file['file']
+                                })
                             }
                         })
                     });

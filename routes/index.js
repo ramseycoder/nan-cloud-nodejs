@@ -24,5 +24,7 @@ router.post('/admin/cloud', globalController.adminLoginPost);
 router.get('/shared', globalController.shared2);
 router.get('/shared/:key', globalController.shared1);
 router.post('/shared/:key', globalController.shared1Post);
+router.get('/download', globalController.download);
+router.get('/downloadShare', globalController.downloadShare);
 
 module.exports = router;

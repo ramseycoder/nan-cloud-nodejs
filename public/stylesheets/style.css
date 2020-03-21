@@ -1,3 +1,8 @@
+.folder_path,
+.downloadDiv {
+    display: none;
+}
+
 .bc-icons-2 nav ol {
     background-color: rgb(237, 235, 235) !important;
     width: 100%;
