@@ -15,6 +15,7 @@
 </head>
 
 <body>
+    <p class="folder_path" style="display:none"><%= path %></p>
     <%
       function verifImage(str){
         return ['jpg','png','gif','jpeg'].includes(getType(str));
@@ -206,11 +207,8 @@
                                                 class="form-check childCheck"><span class="file_name"><a
                                                     href="/shared?key=<%= key %>&dir=<%= file.name %>"><%= file.name %></a></span>
                                         </div>
-                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
-                                                class="fas fa-share-alt"></i><%}%>
-                                    </div>
-                                  </td>
-                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%} else if(verifImage(file.name)){%>
@@ -218,14 +216,12 @@
                                         <div class="left"><% if(path === 'none'){%><img src="/STORAGE/<%= file.name %>"
                                                 width="50"><%}else if(typeof(path) === "string"){%><img
                                                 src="/STORAGE/<%= path %>/<%= file.name %>" width="50"><%}else{%><img
-                                                src="/STORAGE/<%= path.join('/') %>/<%= file.name %>" width="50"><%}%></i> <input onchange="Change(this)" onmouseover="setFalse()" onmouseleave="setTrue()" type="checkbox"
-                                        class="form-check childCheck"><span class="file_name"><%= file.name %></span>
+                                                src="/STORAGE/<%= path.join('/') %>/<%= file.name %>"
+                                                width="50"><%}%></i> <input onchange="Change(this)" onmouseover="setFalse()" onmouseleave="setTrue()" type="checkbox"
+                                        class="form-check childCheck"><span class="file_name imageSlide" onclick="readImage('<%= file.name %>')"><%= file.name %></span>
                                         </div>
-                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
-                                                class="fas fa-share-alt"></i><%}%>
-                                    </div>
-                                  </td>
-                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else if(getType(file.name) === "mp4"){%>
@@ -233,14 +229,11 @@
                                         <div class="left"><img src="/public/images/video-player.png" width="50"></i>
                                             <input onmouseover="setFalse()" onmouseleave="setTrue()"
                                                 onchange="Change(this)" type="checkbox"
-                                                class="form-check childCheck"><span
-                                                class="file_name"><%= file.name %></span>
+                                                class="form-check childCheck"><span class="file_name"
+                                                onclick="videoReader('<%= file.name %>')"><%= file.name %></span>
                                         </div>
-                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
-                                                class="fas fa-share-alt"></i><%}%>
-                                        </i></div>
-                                  </td>
-                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else if(getType(file.name) === "pdf"){%>
@@ -248,14 +241,11 @@
                                         <div class="left"><img src="/public/images/pdf.png" width="50"></i> <input
                                                 onmouseover="setFalse()" onmouseleave="setTrue()"
                                                 onchange="Change(this)" type="checkbox"
-                                                class="form-check childCheck"><span
-                                                class="file_name"><%= file.name %></span>
+                                                class="form-check childCheck"><span class="file_name"
+                                                onclick="fileReader('<%= file.name %>')"><%= file.name %></span>
                                         </div>
-                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
-                                                class="fas fa-share-alt"></i><%}%>
-                                        </i></div>
-                                  </td>
-                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else if(getType(file.name) === "txt"){%>
@@ -263,14 +253,11 @@
                                         <div class="left"><img src="/public/images/txt.png" width="50"></i> <input
                                                 onmouseover="setFalse()" onmouseleave="setTrue()"
                                                 onchange="Change(this)" type="checkbox"
-                                                class="form-check childCheck"><span
-                                                class="file_name"><%= file.name %></span>
+                                                class="form-check childCheck"><span class="file_name"
+                                                onclick="fileReader('<%= file.name %>')"><%= file.name %></span>
                                         </div>
-                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
-                                                class="fas fa-share-alt"></i><%}%>
-                                        </i></div>
-                                  </td>
-                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else if(getType(file.name) === "mp3"){ %>
@@ -281,24 +268,18 @@
                                                 class="form-check childCheck"><span
                                                 class="file_name"><%= file.name %></span>
                                         </div>
-                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
-                                                class="fas fa-share-alt"></i><%}%>
-                                        </i></div>
-                                  </td>
-                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}else{%>
                                     <td class="nameOptions">
                                         <div class="left"><i class="fas fa-file"></i> <input onchange="Change(this)"
                                                 type="checkbox" onmouseover="setFalse()" onmouseleave="setTrue()"
-                                                class="form-check childCheck"><span
-                                                class="file_name"><%= file.name %></span></div>
-                                        <div class="right"><% if(file.shared){%> shared <%}else{%><i
-                                                class="fas fa-share-alt"></i><%}%>
-                                        </i></div>
-                                  </td>
-                                  <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
+                                                class="form-check childCheck"><span class="file_name"
+                                                onclick="fileReader('<%= file.name %>')"><%= file.name %></span></div>
+                                    </td>
+                                    <td style="text-align: center"><%= ((file.size/1000)/1000).toFixed(2) %> Mo
                                     </td>
                                     <td style="text-align: center"><%= file.date_creation %></td>
                                     <%}%>
@@ -314,6 +295,35 @@
     </div>
   </div>
 
+
+  <div id="ombreView"></div>
+  <div class="fileReader"></div>
+  <div class="videoReader"></div> 
+  <div class="imageReader">
+     <div class="params">
+          <a href=""><i class="fas fa-file-download"></i></a>
+          <i class="fas fa-times-circle"></i>
+     </div>
+     <span></span>
+     <br><br>
+      <div class="row">
+        <div class="col-lg-2 col-md-2">
+          <div class="left-slide">
+            <i class="fas fa-arrow-alt-circle-left"></i>
+          </div>
+        </div>
+        <div class="col-lg-8 col-md-8">
+            <div class="Image">
+              <img src="" width="40%" />
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-2">
+          <div class="right-slide">
+            <i class="fas fa-arrow-alt-circle-right"></i>
+          </div>
+        </div>
+      </div>
+  </div>
   <!-- fin de temps -->
       <script src="/mdbootstrap/js/jquery.min.js"></script>
       <script src="/mdbootstrap/js/popper.js"></script>
@@ -323,4 +333,5 @@
       <script src="/socket.io/socket.io.js"></script>
       <script src="/public/javascripts/fonctions.js"></script>
       <script src="/public/javascripts/clientSide.js"></script>
+      <script src="/public/javascripts/sliderClient.js"></script>
 </html>

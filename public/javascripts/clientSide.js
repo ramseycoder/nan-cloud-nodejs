@@ -1,5 +1,8 @@
 const socket = io();
 let s = $('.privileges').text().includes(',') ? $('.privileges').text().split(',') : [$('.privileges').text()];
+let path = $('.folder_path').text();
+if (path.includes(',')) path = path.split(',').join('/')
+else if (path === 'none') path = "";
 if (s.includes('write')) {
     var previewNode = document.querySelector("#template");
     var previewTemplate = previewNode.innerHTML;

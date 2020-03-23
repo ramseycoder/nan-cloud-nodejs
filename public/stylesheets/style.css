@@ -501,3 +501,98 @@ table tbody tr td.nameOptions .right {
     color: white;
     background: red;
 }
+
+#ombreView {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    background: black;
+    opacity: 0.94;
+    z-index: 4;
+    display: none;
+}
+
+.imageReader,
+.videoReader,
+.fileReader {
+    width: 400px;
+    height: 300px;
+    background: none;
+    position: absolute;
+    top: 0;
+    z-index: 5;
+    width: 100%;
+    height: 100vh;
+    display: none;
+}
+
+.videoReader video {
+    margin: 0 400px;
+    margin-top: 10%;
+
+}
+
+.fileReader iframe {
+    margin-top: 0;
+    background: white;
+}
+
+.fileReader .params {
+    position: fixed;
+    top: 1%;
+    right: 1%;
+    cursor: pointer;
+}
+
+.fileReader .params a,
+.fileReader .params i.fa-times-circle {
+    margin: 5px 0;
+    color: black;
+    font-size: 20px;
+}
+
+.imageReader .params,
+.videoReader .params {
+    float: right;
+    color: white;
+    margin-top: 40px;
+    margin-right: 40px;
+}
+
+.imageReader .params a,
+.videoReader .params a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    margin: 0 10px;
+}
+
+.imageReader .params i,
+.videoReader .params i {
+    font-size: 18px;
+    margin: 0 10px;
+    cursor: pointer;
+}
+
+.imageReader span {
+    clear: both;
+}
+
+.imageReader .row {
+    margin-top: 150px;
+    text-align: center;
+}
+
+.imageReader .row {
+    margin-top: 150px;
+    text-align: center;
+}
+
+.imageReader .left-slide,
+.imageReader .right-slide {
+    font-size: 50px;
+    color: white;
+    cursor: pointer;
+    margin-top: 60%;
+}

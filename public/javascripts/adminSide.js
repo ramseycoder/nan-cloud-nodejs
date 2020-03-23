@@ -87,7 +87,7 @@ $(function () {
               </div>`
         } else if (verifImage(nameFolder)) {
             let s = '';
-            donne = `<div class="repre">`;
+            donne = `<div class="repre" onclick="readImage('${nameFolder}')">`;
             if (path === "") {
                 s = `<img src = "/STORAGE/${nameFolder}"
             width = "100"
@@ -112,7 +112,7 @@ $(function () {
                   <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>$${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (getType(nameFolder) === "pdf") {
-            donne = `<div class="repre">
+            donne = `<div class="repre" onclick="fileReader('${nameFolder}')">
           <img src="/public/images/pdf.png" width="100" height="100" />
               </div>
               <div class="info">
@@ -120,7 +120,7 @@ $(function () {
                   <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (getType(nameFolder) === "txt") {
-            donne = `<div class="repre">
+            donne = `<div class="repre" onclick="fileReader('${nameFolder}')">
           <img src="/public/images/txt.png" width="100" height="100" />
               </div>
               <div class="info">
@@ -128,13 +128,21 @@ $(function () {
                   <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
         } else if (getType(nameFolder) === "mp4") {
-            donne = `<div class="repre">
+            donne = `<div class="repre" onclick="videoReader('${nameFolder}')">
           <img src="/public/images/video-player.png" width="100" height="100" />
               </div>
               <div class="info">
                 <h4>${nameFolder}</h4>
                   <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
               </div>`
+        } else {
+            donne = `<div class="repre" onclick="videoReader('${nameFolder}')">
+            <i class="fas fa-file"></i>
+                </div>
+                <div class="info">
+                  <h4>${nameFolder}</h4>
+                    <p><span>${((data.size/1000)/1000).toFixed(2)} Mo </span>&nbsp;&nbsp;&nbsp;&nbsp;<span>${getRightFormatDate(data.date_creation)}</span></p>
+                </div>`
         }
         $('.right_content .contenu_article').html(donne);
         const boxContent = document.querySelector('.box_content');

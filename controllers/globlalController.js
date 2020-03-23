@@ -289,7 +289,8 @@ exports.shared2 = async (req, res) => {
 exports.download = async (req, res) => {
     let p = folder_path === '' ? path.join(__dirname, '../BigData') : path.join(__dirname, '../BigData', folder_path);
     if (req.query.type == "file") {
-        res.download(path.join(p, req.query.file));
+        console.log('oui');
+        res.download(path.join(p, req.query.file))
     } else {
         child_process.execSync(`zip -r ${req.query.dir} *`, {
             cwd: p
