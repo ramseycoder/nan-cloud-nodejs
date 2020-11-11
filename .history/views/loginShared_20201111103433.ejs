@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/mdbootstrap/css/all.min.css">
+    <link rel="stylesheet" href="/mdbootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/mdbootstrap/css/mdb.min.css">
+    <link rel="stylesheet" href="/public/stylesheets/all.min.css">
+    <link rel="stylesheet" href="/public/stylesheets/dropzone.css">
+    <link rel="stylesheet" href="/public/stylesheets/style.css">
+    <title>shared</title>
+</head>
+
+<body class="container" id="sharedLogin" style="background:black">
+    <section>
+        <br>
+        <% if(errorLogin){%>
+        <div class="alert alert-danger">
+            <p>mot de passe incorrect</p>
+        </div>
+        <%}%>
+        <br>
+        <h3 style="color:white;font-size:70px;font-weight:bolder;margin-bottom:30px;font-family:'Arial Black'">Vidéo protégé</h3>
+        <p style="font-size:15px;">Veuillez entrez le mot de passe svp</p>
+        <form method="post" action="/shared/<%= key %>">
+        <input type="hidden" name="key" value="<%= key %>" />
+        <div class="form-group">
+            <input type="password" id="password" class="form-control mb-4" name="password" required>
+        </div>
+        </form>
+    </section>
+    <script src="/mdbootstrap/js/jquery.min.js"></script>
+    <script src="/mdbootstrap/js/popper.js"></script>
+    <script src="/mdbootstrap/js/bootstrap.min.js"></script>
+    <script src="/mdbootstrap/js/mdb.min.js"></script>
+</body>
+
+</html>
