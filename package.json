@@ -23,7 +23,7 @@
     "nodemon": "^2.0.2",
     "random-key": "^0.3.2",
     "rimraf": "^3.0.2",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "uniqid": "^5.2.0"
   },
   "devDependencies": {}
